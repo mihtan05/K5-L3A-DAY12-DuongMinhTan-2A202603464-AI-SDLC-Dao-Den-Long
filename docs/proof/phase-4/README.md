@@ -80,14 +80,14 @@ Như vậy RSS tăng do allocator và JIT khởi động, không do rò bộ nh�
 | 4.2 | Phụ đề và chỉ báo: Bóng Mực xuất hiện (kèm mũi tên ở mép màn hình), gió sắp thổi, 10 s cuối, đèn < 30 dầu | smoke | smoke "caption + edge arrow when a shade appears", "captions: lantern fuel < 30 and last 10 s", "caption: wind coming"; `15-captions.png` | PASS |
 | 4.3 | Giảm chuyển động tắt rung camera và chớp màn hình | smoke | smoke "hit: camera shake and screen flash", "reduced motion: no camera shake, no flash" | PASS (hai hiệu ứng này mới thêm ở Phase 4, giả định D14) |
 | 4.4 | Chữ UI ≥ 18 px ở 1280×720; tùy chọn chữ lớn ×1.25 | smoke | smoke "menus: every text >= 18 px", "HUD: every text >= 18 px", "large text: every text >= 22.5 px"; `16-large-text.png` | PASS |
-| 5.1 | Clone sạch → tối đa 3 lệnh → chơi được | — | README: `git clone`, `npm ci`, `npm start` | Chưa thử trên máy sạch khác; trên máy này `npm start` build và chạy được |
+| 5.1 | Clone sạch → tối đa 3 lệnh → chơi được | chạy thật | `git clone` sang thư mục mới → `npm ci` (52 gói, 11 s) → `npm start`: trang trả 200, `/api/leaderboard` và `--export-leaderboard` chạy được | PASS trên thư mục sạch của máy này; chưa thử trên máy khác hoặc macOS/Linux |
 | 5.2 | README có mô tả, ảnh, yêu cầu hệ thống, cài đặt, điều khiển, test, headless, bench, soak | tài liệu | `README.md` | PASS |
 | 5.3 | CHANGELOG có mục cho cả 4 phase; CREDITS; LICENSE | tài liệu | `CHANGELOG.md`, `CREDITS.md`, `LICENSE` | PASS |
-| 5.4 | GitHub Release v1.0.0 có bản chạy được | — | — | **CHƯA LÀM**: cần bạn đồng ý push và tạo Release |
+| 5.4 | GitHub Release v1.0.0 có bản chạy được | — | Release `v1.0.0`: `dao-den-long-v1.0.0-web.zip` (`dist/` + `scripts/server.mjs` + `src/leaderboard.ts`, chạy bằng `node scripts/server.mjs`) | PASS |
 | 6 | Contract v1.3, có `bench_cmd` và `soak_cmd`, giữ mọi yêu cầu v1.0–v1.2 | unit + verify | `contract.test`; 35 scenario cũ vẫn PASS | PASS |
-| 7.1 | Retro 1–2 trang | tài liệu | `docs/notes/retro.md` | Bản nháp; **các ô token/chi phí chưa điền** |
+| 7.1 | Retro 1–2 trang | tài liệu | `docs/notes/retro.md`, token theo phase trong `docs/notes/ai-log.md` | PASS |
 | 7.2 | Video demo `.mp4` dưới 5 phút | — | — | **CHƯA LÀM** |
-| DoD | Tag `phase-4` | — | — | **CHƯA LÀM** (chờ bạn đồng ý) |
+| DoD | Tag `phase-4` và Release v1.0.0 | — | tag `phase-4` trỏ vào commit này | PASS |
 | DoD | `bench.json` và `soak.json` tự chạy, đã commit | — | `bench.json`, `soak.json` ở thư mục gốc | PASS |
 | DoD | Test Phase 1–3 còn hiệu lực vẫn đạt | unit + verify | `unit-tests.txt`, `verify-summary.txt` | PASS (không chạy được bộ test ẩn của lab) |
 
