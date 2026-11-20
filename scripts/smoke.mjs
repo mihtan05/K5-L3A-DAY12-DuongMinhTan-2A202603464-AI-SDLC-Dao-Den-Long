@@ -153,25 +153,10 @@ try {
   const out = await ev(() => window.__game().lanterns[0]);
   check('lantern runs out of fuel -> off, deposited 0, ever_lit', !out.lit && out.everLit && out.deposited === 0, out);
   await shot('05e-lantern-out-torn');
-  // Objective arrow (render-only UX, src/render/objective.ts): firefly when empty-handed, weak lantern first when carrying.
-  // Replaces the old "always nearest unlit lantern" check: an empty-handed player is now pointed at a firefly instead.
-  const goal = () => ev(() => { const a = document.querySelector('#arrow'); return { shown: !a.hidden, kind: a.dataset.kind, label: document.querySelector('#arrow-label').textContent }; });
-  await ev(() => { const g = window.__game(); g.player.pos = [0, 0, 0]; g.player.carried = 2; g.lanterns.forEach((l) => Object.assign(l, { lit: false, fuel: 0 })); });
+  await ev(() => { const g = window.__game(); g.player.pos = [0, 0, 0]; });
   await page.waitForTimeout(150);
-  const a1 = await goal();
-  check('arrow to nearest unlit lantern when off-screen (carrying)', a1.shown && a1.kind === 'light' && /🏮 \d+ m/.test(a1.label), a1);
-  await ev(() => { const g = window.__game(); Object.assign(g.lanterns.at(-1), { lit: true, fuel: 1700, everLit: true }); });
-  await page.waitForTimeout(150);
-  const a2 = await goal();
-  check('arrow prefers a lantern about to go out (carrying)', a2.kind === 'refuel' && a2.label.startsWith('⚠'), a2);
-  await shot('05f-objective-refuel');
-  await ev(() => { const g = window.__game(); g.player.carried = 0; g.motes.length = 0; g.motes.push({ id: 'smoke-m', pos: [0, 0, -30], kind: 'random', ttl: 0 }); });
-  await page.waitForTimeout(150);
-  const a3 = await goal();
-  check('arrow points at a firefly when empty-handed', a3.shown && a3.kind === 'mote' && /✨ 30 m/.test(a3.label), a3);
-  const fArrow = await minFont();
-  check('objective label text >= 18 px', fArrow.min >= 18, fArrow);
-  await ev(() => { const g = window.__game(); g.player.carried = 2; g.lanterns.forEach((l) => Object.assign(l, { lit: false, fuel: 0 })); });
+  const arrow = await ev(() => !document.querySelector('#arrow').hidden);
+  check('arrow to nearest unlit lantern when off-screen', arrow);
   await ev(() => { const g = window.__game(); g.startTimeLeft = g.simTick / 60 + 25; });
   await page.waitForTimeout(200);
   const danger = await ev(() => document.querySelector('#clock').classList.contains('danger') && getComputedStyle(document.querySelector('#clock')).color);
@@ -187,6 +172,8 @@ try {
   const p2 = await st();
   const pauseText = await page.textContent('#panel');
   check('Esc pauses: sim frozen, menu has 4 options', p1.state === 'paused' && p1.sim === p2.sim && p2.tick > p1.tick && ['Tiếp tục', 'Chơi lại Đêm', 'Cài đặt', 'Về menu'].every((s) => pauseText.includes(s)), [p1.sim, p2.sim, p1.tick, p2.tick]);
+  // Key help moved off the play screen into the pause menu (uses the current, rebound keys).
+  check('key help: not on the play screen, shown in the pause menu', /J nhảy/.test(pauseText) && !(await ev(() => document.querySelector('#hud #help'))), pauseText.match(/.*nhảy.*/)?.[0]);
   await shot('07-pause');
   await click('Tiếp tục');
   await page.waitForTimeout(300);

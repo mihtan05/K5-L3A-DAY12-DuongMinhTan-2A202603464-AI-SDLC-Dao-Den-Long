@@ -9,7 +9,6 @@ import { playSfx, setVolume, startMusic, stopMusic } from './audio';
 import { BENCH_CAM, frameStats, orbit } from './bench';
 import { addEntry, cleanName, isoLocal, loadBoard, type Entry } from '../leaderboard';
 import { ambientIntensity, P, P_CB } from './palette';
-import { objective, type ObjectiveKind } from './objective';
 import { makeBigLantern, makeCharm, makeDrifter, makeLeaves, makeMay, makeMote, makeShade, makeWorld } from './prefabs';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -196,8 +195,11 @@ function dawn() {
   show('dawn', `<h1>🌅 Bình Minh</h1><p>Ba hòn đảo đã sáng đèn. Tiếng chuông ngân khắp biển mây.</p>
     <p>Tổng điểm</p><p class="big">${total}</p>${saveForm()}<button data-act="menu">Về menu</button>`);
 }
+// Key help lives in the pause menu (and README), not on the play screen.
+const helpText = () =>
+  `${['up', 'left', 'down', 'right'].map((a) => K(a as Action)).join('/')} đi · ${K('jump')} nhảy · ${K('dash')} lướt · ${K('interact')} nạp/châm dầu · ${K('pulse')} tỏa sáng · ${K('pause')} tạm dừng · kéo chuột xoay`;
 function pauseMenu() {
-  show('pause', `<h2>Tạm dừng</h2><button data-act="resume">Tiếp tục</button><button data-act="restart">Chơi lại Đêm</button>
+  show('pause', `<h2>Tạm dừng</h2><p id="help">${esc(helpText())}</p><button data-act="resume">Tiếp tục</button><button data-act="restart">Chơi lại Đêm</button>
     <button data-act="settings">Cài đặt</button><button data-act="menu">Về menu</button>`);
 }
 let settingsReturn = '';
@@ -529,26 +531,19 @@ function draw(dt: number, t: number) {
   cd('cd-dash', p.charm > 0 ? 0 : p.dashCd, T.dash_cooldown_s * TPS);
   $('cd-dash').classList.toggle('charmed', p.charm > 0);
   cd('cd-pulse', p.pulseCd, T.pulse_cooldown_s * TPS);
+  const unlit = g.lanterns.filter((l) => !l.lit);
   const dist = (l: { pos: number[] }) => Math.hypot(l.pos[0] - p.pos[0], l.pos[2] - p.pos[2]);
   const near = g.lanterns.filter((l) => dist(l) <= T.interact_radius && (!l.lit || l.fuel < FUEL_MAX)).sort((a, b) => dist(a) - dist(b))[0];
   setText('prompt', !near ? '' : near.lit
     ? `${K('interact')} — Châm dầu (${Math.floor(near.fuel / TPS)}/100)`
     : `${K('interact')} — Nạp ánh sáng (${near.deposited}/${lightCost(near)})`);
   setText('wind', g.wind.active ? '🍃 Gió đang thổi!' : g.wind.warn ? '🍃 Gió sắp nổi…' : '');
-  // Objective arrow: firefly when empty-handed, else a lantern about to go out, else an unlit one (objective.ts).
-  const goal = objective(g);
-  const arrow = $('arrow');
-  edgeArrow(arrow, goal ? [goal.pos[0], goal.pos[1] + (goal.kind === 'mote' ? 0.5 : 2), goal.pos[2]] : null);
-  if (goal && !arrow.hidden) {
-    if (arrow.dataset.kind !== goal.kind) arrow.dataset.kind = goal.kind;
-    setText('arrow-label', `${GOAL_ICON[goal.kind]} ${Math.round(goal.dist)} m`);
-  }
+  const target = unlit.sort((a, b) => dist(a) - dist(b))[0];
+  edgeArrow($('arrow'), target ? [target.pos[0], target.pos[1] + 2, target.pos[2]] : null);
   // New shade: arrow at the screen edge towards it for 3.5 s while it is off-screen
   const cue = shadeCue && performance.now() < shadeCue.until && settings.captions ? g.shades.find((s) => s.id === shadeCue!.id) : undefined;
   edgeArrow($('sarrow'), cue ? cue.pos : null);
 }
-/** Shape + text as well as color, so the cue survives colorblind mode. */
-const GOAL_ICON: Record<ObjectiveKind, string> = { mote: '✨', refuel: '⚠ 🏮', light: '🏮' };
 /** Shows el at the screen edge pointing at pos when pos is off-screen; hides it otherwise. */
 function edgeArrow(el: HTMLElement, pos: readonly number[] | null) {
   el.hidden = true;
@@ -572,7 +567,6 @@ function applyLook() {
   root.setProperty('--shade', hex(settings.colorblind ? P_CB.shadeRim : P.shadeRim));
   root.setProperty('--fs', settings.largeText ? '1.25' : '1');
   document.documentElement.classList.toggle('reduce-motion', settings.reduceMotion);
-  $('help').textContent = `${['up', 'left', 'down', 'right'].map((a) => K(a as Action)).join('/')} đi · ${K('jump')} nhảy · ${K('dash')} lướt · ${K('interact')} nạp/châm dầu · ${K('pulse')} tỏa sáng · ${K('pause')} tạm dừng · kéo chuột xoay`;
   $('cd-dash').querySelector('span')!.innerHTML = `Lướt<br>${esc(K('dash'))}`;
   $('cd-pulse').querySelector('span')!.innerHTML = `Tỏa<br>${esc(K('pulse'))}`;
 }
