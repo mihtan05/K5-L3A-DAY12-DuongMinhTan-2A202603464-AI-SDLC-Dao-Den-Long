@@ -69,7 +69,7 @@ Ticket-02 thay toàn bộ tuning Phase 1 bằng số chuẩn, nên các giả đ
 
 ## Phase 3 (Ticket-03, Test Contract v1.2)
 
-Ticket-03 thay một số giả định Phase 2: B6 (Bóng Mực `wander` đi tới điểm ngẫu nhiên, hết choáng về `chase`/`wander`) và B8 (vùng an toàn của mọi đèn sáng). Thiết kế: [ADR 0001](../adr/0001-lantern-fuel-and-dawn-win.md). Thay đổi phá vỡ tương thích: [CHANGELOG.md](../../CHANGELOG.md).
+Ticket-03 thay một số giả định trước: A10 (thưởng thời gian khi thắng, nay `per_second_left` = 0 và thưởng tính theo đèn ở bình minh), B6 (Bóng Mực `wander` đi tới điểm ngẫu nhiên, hết choáng về `chase`/`wander`) và B8 (vùng an toàn của mọi đèn sáng). Thiết kế: [ADR 0001](../adr/0001-lantern-fuel-and-dawn-win.md). Thay đổi phá vỡ tương thích: [CHANGELOG.md](../../CHANGELOG.md).
 
 | # | Chỗ mơ hồ | Giả định |
 |---|---|---|
