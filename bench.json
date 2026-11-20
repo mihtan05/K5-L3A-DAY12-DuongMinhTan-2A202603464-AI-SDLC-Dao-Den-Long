@@ -1,0 +1,18 @@
+{
+  "contract_version": "1.3",
+  "avg_fps": 145.7,
+  "p1_low_fps": 53,
+  "frame_ms_p95": 9.6,
+  "frames": 4371,
+  "load_ms": 1162,
+  "peak_mem_mb": null,
+  "vsync_off": true,
+  "renderer": "Three.js r187, WebGL2 (ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001638) Direct3D11 vs_5_0 ps_5_0, D3D11)), chromium msedge 157.0.4341.60, flags --disable-gpu-vsync --disable-frame-rate-limit",
+  "os": "Windows_NT 10.0.26200 x64; AMD Ryzen 5 5600H with Radeon Graphics x12; RAM 15.4 GB",
+  "seed": 42,
+  "duration_s": 30,
+  "viewport": "1280x720",
+  "js_heap_peak_mb": 35,
+  "peak_mem_note": "Web build: the page cannot read the RSS of the browser processes, so peak_mem_mb is null; js_heap_peak_mb is the peak JS heap (Chromium performance.memory).",
+  "page_errors": []
+}
