@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npm test --silent > /dev/null 2>&1 || { echo 'npm test is failing: fix the tests (do not weaken them) before finishing.' >&2; exit 2; }",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && out=$(npm test --silent 2>&1) || { echo \"npm test is failing: fix the code (do not weaken tests) before finishing. cwd=$(pwd)\" >&2; echo \"$out\" | tail -20 >&2; exit 2; }",
             "timeout": 180
           }
         ]
