@@ -113,7 +113,7 @@ describe('motes & lanterns', () => {
     expect(ids(r.snaps[2]).size).toBe(22);
   });
   it('deposits min(carried, missing) on interact press, +10 per mote, lights at 10', () => {
-    const r = go({ player: { pos: [0, 0, 23], carried: 12 > 10 ? 10 : 0 } }, [{ tick: 0, interact: true }, { tick: 5, interact: true }]);
+    const r = go({ player: { pos: [0, 0, 23], carried: 10 } }, [{ tick: 0, interact: true }, { tick: 5, interact: true }]);
     expect(names(r.events)).toEqual(['deposit', 'lantern_lit']);
     expect(r.events[0]).toMatchObject({ tick: 1, data: { lantern_id: 'L1', amount: 10, deposited: 10 } });
     expect(r.end.score).toBe(10 * T.score.per_mote + T.score.per_lantern);
@@ -299,7 +299,7 @@ describe('charm', () => {
 });
 
 describe('drifters (Gió Lạc)', () => {
-  const D = (o: object) => ({ random_drifters: false, drifters: [{ id: 'D1', pos: [3, 1.5, 0], ...o }] });
+  const D = (o: object): Scenario => ({ random_drifters: false, drifters: [{ id: 'D1', pos: [3, 1.5, 0], ...o }] });
   it('chases when May carries >= 5 within 15 m, steals min(3, carried) once, flees 240 ticks then removed', () => {
     const r = go({ ...D({}), player: { carried: 6, invuln_ticks: 300 } }, [], 400, 1, 2);
     expect(r.snaps[1].drifters[0].state).toBe('chase');
