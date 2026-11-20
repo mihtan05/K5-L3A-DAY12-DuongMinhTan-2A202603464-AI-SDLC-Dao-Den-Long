@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","90","--snapshot-every","30","--scenario","tests/scenarios/walk-pickup.scenario.json","--inputs","tests/scenarios/walk-pickup.inputs.json"]}

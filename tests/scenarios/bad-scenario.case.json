@@ -1,0 +1,1 @@
+{"expect_exit":2,"args":["--seed","1","--night","1","--ticks","10","--scenario","tests/scenarios/bad-scenario.scenario.json"]}

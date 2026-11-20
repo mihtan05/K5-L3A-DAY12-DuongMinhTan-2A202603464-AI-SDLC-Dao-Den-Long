@@ -1,0 +1,9 @@
+
+ RUN  v5.1.1 D:/VinUni/K5-L3A-DAY12-DuongMinhTan-2A202603464-AI-SDLC-Dao-Den-Long
+
+
+ Test Files  3 passed (3)
+      Tests  25 passed (25)
+   Start at  15:16:24
+   Duration  285ms (import 34%, transform 31%, tests 28%, worker 8%)
+

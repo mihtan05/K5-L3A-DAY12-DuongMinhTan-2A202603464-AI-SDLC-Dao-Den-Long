@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","300","--snapshot-every","60","--scenario","tests/scenarios/safe-radius.scenario.json"]}

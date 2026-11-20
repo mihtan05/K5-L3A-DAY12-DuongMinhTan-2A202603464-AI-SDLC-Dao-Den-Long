@@ -1,0 +1,12 @@
+verify @ fd7ad6f (2026-11-20T08:16:39.393Z)
+unit tests: PASS
+bad-inputs: exit=2 (want 2) deterministic=true -> PASS
+bad-scenario: exit=2 (want 2) deterministic=true -> PASS
+dawn: exit=0 (want 0) deterministic=true -> PASS
+default-seed1: exit=0 (want 0) deterministic=true -> PASS
+hit-lose: exit=0 (want 0) deterministic=true -> PASS
+pulse: exit=0 (want 0) deterministic=true -> PASS
+safe-radius: exit=0 (want 0) deterministic=true -> PASS
+walk-pickup: exit=0 (want 0) deterministic=true -> PASS
+win: exit=0 (want 0) deterministic=true -> PASS
+RESULT: PASS
