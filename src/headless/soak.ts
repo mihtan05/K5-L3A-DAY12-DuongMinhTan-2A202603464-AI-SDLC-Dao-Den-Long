@@ -5,7 +5,7 @@ import { dirname } from 'node:path';
 import { soakNight } from '../core/bench';
 import type { Game } from '../core/sim';
 
-const mb = () => Math.round((process.memoryUsage().rss / 2 ** 20) * 10) / 10;
+const mb = (k: 'rss' | 'heapUsed' = 'rss') => Math.round((process.memoryUsage()[k] / 2 ** 20) * 10) / 10;
 const gc = () => (globalThis as { gc?: () => void }).gc?.();
 
 export function soak(seed: number, nights: number, onFirst: () => void = () => {}) {
@@ -37,10 +37,14 @@ function main() {
   }
   const t0 = performance.now();
   // mem_start: RSS right after the first night is loaded (created, before its first tick).
-  let memStart = 0;
-  const { results, crashes } = soak(seed, nights, () => (gc(), (memStart = mb())));
+  let memStart = 0, heapStart = 0;
+  const { results, crashes } = soak(seed, nights, () => (gc(), (memStart = mb()), (heapStart = mb('heapUsed'))));
   gc();
-  const report = { nights, crashes, results, mem_start_mb: memStart, mem_end_mb: mb(), duration_s: Math.round((performance.now() - t0) / 100) / 10 };
+  const report = {
+    nights, crashes, results, mem_start_mb: memStart, mem_end_mb: mb(), duration_s: Math.round((performance.now() - t0) / 100) / 10,
+    // extra (not in the contract): JS heap after GC, to tell a leak from RSS warm-up
+    heap_start_mb: heapStart, heap_end_mb: mb('heapUsed'),
+  };
   mkdirSync(dirname(out!) || '.', { recursive: true });
   writeFileSync(out!, JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify(report));

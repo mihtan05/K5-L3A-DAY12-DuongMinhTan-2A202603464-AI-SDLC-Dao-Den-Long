@@ -433,6 +433,9 @@ function sync<V extends { object: THREE.Object3D }>(map: Map<string, V>, ids: st
   };
 }
 const proj = new THREE.Vector3();
+const hudCache = new Map<string, string>();
+const setText = (id: string, v: string) => hudCache.get(id) !== v && (hudCache.set(id, v), ($(id).textContent = v));
+const setHTML = (id: string, v: string) => hudCache.get('h:' + id) !== v && (hudCache.set('h:' + id, v), ($(id).innerHTML = v));
 function draw(dt: number, t: number) {
   const g = game;
   const p = g.player;
@@ -501,21 +504,24 @@ function draw(dt: number, t: number) {
   }
   camera.updateMatrixWorld();
 
-  // HUD
-  $('flames').innerHTML = Array.from({ length: T.flames }, (_, i) => `<span class="${i < p.flames ? '' : 'off'}">🔥</span>`).join('');
+  // HUD (DOM is written only when a value changes: no per-frame style/layout work)
+  setHTML('flames', Array.from({ length: T.flames }, (_, i) => `<span class="${i < p.flames ? '' : 'off'}">🔥</span>`).join(''));
   const tl = Math.max(0, timeLeft(g));
   const sec = Math.ceil(tl - 1e-9);
   const clock = $('clock');
-  clock.textContent = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
-  clock.classList.toggle('danger', tl <= 30);
-  if (tl <= 30 && settings.colorblind) clock.textContent = `⚠ ${clock.textContent}`;
-  $('lanterns').textContent = `🏮 Đèn sáng ${lit}/${g.lanterns.length} · cần ${winNeed(g)}`;
-  $('score').textContent = `⭐ ${g.score}`;
+  const mmss = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+  setText('clock', tl <= 30 && settings.colorblind ? `⚠ ${mmss}` : mmss);
+  if (clock.classList.contains('danger') !== tl <= 30) clock.classList.toggle('danger', tl <= 30);
+  setText('lanterns', `🏮 Đèn sáng ${lit}/${g.lanterns.length} · cần ${winNeed(g)}`);
+  setText('score', `⭐ ${g.score}`);
   const bar = $('bar');
   const cap = capacity(p);
-  if (bar.childElementCount !== cap + 1) bar.innerHTML = '<i></i>'.repeat(cap) + '<b></b>';
-  [...bar.children].forEach((c, i) => c.classList.toggle('on', i < p.carried));
-  bar.lastElementChild!.textContent = `${p.carried}/${cap}`;
+  if (bar.childElementCount !== cap + 1) (bar.innerHTML = '<i></i>'.repeat(cap) + '<b></b>'), hudCache.delete('carried');
+  if (hudCache.get('carried') !== `${p.carried}/${cap}`) {
+    [...bar.children].forEach((c, i) => c.classList.toggle('on', i < p.carried));
+    bar.lastElementChild!.textContent = `${p.carried}/${cap}`;
+    hudCache.set('carried', `${p.carried}/${cap}`);
+  }
   const cd = (id: string, left: number, full: number) => {
     ($(id).firstElementChild as HTMLElement).style.height = `${(100 * left) / full}%`;
   };
@@ -525,10 +531,10 @@ function draw(dt: number, t: number) {
   const unlit = g.lanterns.filter((l) => !l.lit);
   const dist = (l: { pos: number[] }) => Math.hypot(l.pos[0] - p.pos[0], l.pos[2] - p.pos[2]);
   const near = g.lanterns.filter((l) => dist(l) <= T.interact_radius && (!l.lit || l.fuel < FUEL_MAX)).sort((a, b) => dist(a) - dist(b))[0];
-  $('prompt').textContent = !near ? '' : near.lit
+  setText('prompt', !near ? '' : near.lit
     ? `${K('interact')} — Châm dầu (${Math.floor(near.fuel / TPS)}/100)`
-    : `${K('interact')} — Nạp ánh sáng (${near.deposited}/${lightCost(near)})`;
-  $('wind').textContent = g.wind.active ? '🍃 Gió đang thổi!' : g.wind.warn ? '🍃 Gió sắp nổi…' : '';
+    : `${K('interact')} — Nạp ánh sáng (${near.deposited}/${lightCost(near)})`);
+  setText('wind', g.wind.active ? '🍃 Gió đang thổi!' : g.wind.warn ? '🍃 Gió sắp nổi…' : '');
   const target = unlit.sort((a, b) => dist(a) - dist(b))[0];
   edgeArrow($('arrow'), target ? [target.pos[0], target.pos[1] + 2, target.pos[2]] : null);
   // New shade: arrow at the screen edge towards it for 3.5 s while it is off-screen

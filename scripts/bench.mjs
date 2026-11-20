@@ -21,7 +21,8 @@ const server = await startServer(0);
 const vsyncFlags = ['--disable-gpu-vsync', '--disable-frame-rate-limit'];
 const launchOpts = {
   headless: process.env.BENCH_HEADLESS === '1',
-  args: [...vsyncFlags, '--enable-gpu', '--ignore-gpu-blocklist', '--window-size=1280,800', '--window-position=40,40'],
+  // no throttling when the window is covered or loses focus (other apps on the bench machine)
+  args: [...vsyncFlags, '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--enable-gpu', '--ignore-gpu-blocklist', '--window-size=1280,800', '--window-position=40,40'],
 };
 // Installed Edge (Windows) / Chrome (macOS, Linux) first, then Playwright's own Chromium.
 const tries = process.env.BROWSER_CHANNEL ? [process.env.BROWSER_CHANNEL] : [process.platform === 'win32' ? 'msedge' : 'chrome', undefined];
