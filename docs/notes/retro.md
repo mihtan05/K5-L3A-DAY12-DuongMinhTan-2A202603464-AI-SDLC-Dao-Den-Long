@@ -1,8 +1,6 @@
 # Retro — Đảo Đèn Lồng (Lab Day 12)
 
-> Bản nháp do Claude Code soạn từ nhật ký AI, commit và bằng chứng của 4 phase. Hai mục bạn cần tự điền hoặc sửa:
-> - các ô **token/chi phí** (lấy từ `/cost` hoặc trang usage);
-> - mục **"Nếu làm lại"**, nếu bạn thấy khác.
+> Soạn cùng Claude Code dựa trên nhật ký AI, lịch sử commit và bằng chứng của 4 phase.
 
 ## 1. Đánh giá 4 phase
 
@@ -11,7 +9,7 @@
 | 1 (PRD-0, v1.0) | Một đảo, nhặt đom đóm, thắp đèn, Bóng Mực, headless JSONL | 25 unit test, 9 scenario, smoke trên trình duyệt ([proof](../proof/phase-1/README.md)) | — |
 | 2 (Ticket-02, v1.1) | 3 Đêm, số chuẩn, thứ tự tick, lướt, rơi, bục nhảy, gió, Gió Lạc, Bùa Gió, tạm dừng, menu | 57 unit test, 25 scenario có `expect`, smoke 3 Đêm, FPS ([proof](../proof/phase-2/README.md)) | FPS chỉ đo Đêm 1 |
 | 3 (Ticket-03, v1.2) | Dầu đèn, tắt / châm / thắp lại, trạng thái `drain`, thắng ở bình minh, sức chứa, điểm mới, chế độ mù màu | 81 unit test, 35 scenario, 26 kiểm tra smoke, ADR 0001, CHANGELOG ([proof](../proof/phase-3/README.md)) | Tần số nhấp nháy 1 Hz và việc ánh sáng giảm khi đèn tắt mới chỉ kiểm bằng đọc code và ảnh chụp |
-| 4 (Ticket-04, v1.3) | Bench, soak, bảng xếp hạng, dễ tiếp cận, đóng gói, Release | 95 unit test, smoke có thêm 15 kiểm tra, bench và soak trên máy tôi ([proof](../proof/phase-4/README.md)) | `peak_mem_mb` = null (bản web); video demo và Release cần tự làm |
+| 4 (Ticket-04, v1.3) | Bench, soak, bảng xếp hạng, dễ tiếp cận, đóng gói, Release | 95 unit test, smoke 41/41, bench 145.7 FPS trung bình / 1% low 53 / load 1.2 s, soak 0 crash và bộ nhớ ×1.14 ([proof](../proof/phase-4/README.md)) | `peak_mem_mb` = null (bản web); 1% low dao động 27–65 trên máy làm bài; video demo |
 
 ## 2. Điều hiệu quả khi làm với AI
 - **Chép nguyên văn ticket vào repo** (`docs/lab/TICKET-0N.md`) trước khi code. Khi phân vân, AI trích lại ticket thay vì đoán. Chỗ nào mơ hồ thì ghi thành giả định có mã số (A, B, C, D).
@@ -43,11 +41,16 @@
 ## 6. Token và chi phí
 | Phase | Token / chi phí ước tính |
 |---|---|
-| 0–1 | *(điền)* |
-| 2 | *(điền)* |
-| 3 | *(điền)* |
-| 4 | *(điền)* |
-| **Tổng** | *(điền)* |
+| 0 (chuẩn bị) | 27 lượt gọi · input 0.11M · cache read 3.00M · output 0.04M |
+| 1 | 20 lượt · input 0.07M · cache read 3.67M · output 0.05M |
+| 2 | 88 lượt · input 0.30M · cache read 18.87M · output 0.16M |
+| 3 | 63 lượt · input 0.22M · cache read 18.96M · output 0.09M |
+| 4 | 87 lượt · input 0.20M · cache read 23.21M · output 0.13M |
+| **Tổng** | **285 lượt · input 0.90M · cache read 67.71M · output 0.47M** |
+
+Số lấy từ log Claude Code trên máy (cách đo ở [ai-log.md](ai-log.md)). Chi phí: gói Claude Pro cố định theo tháng, không tính tiền theo token. Lúc kết thúc, giới hạn 5 giờ đã dùng 90%, giới hạn tuần 68%.
+
+**Nhận xét:** 98% token là ngữ cảnh đọc lại (cache read). Phiên càng dài thì mỗi lượt càng đắt. Phase 4 tốn nhiều nhất phần vì chạy bench lặp lại nhiều lần khi kết quả dao động.
 
 Cách tiết kiệm:
 - đọc tài liệu lab một lần rồi lưu thành file trong repo;
@@ -60,3 +63,4 @@ Cách tiết kiệm:
 - Viết smoke trình duyệt và bench ngay từ Phase 1, để thấy sớm vấn đề hiệu năng khi có nhiều thực thể.
 - Giữ một cách tính seed và một cách chạy game (`npm start`) từ đầu, thay vì đổi `run_cmd` ở Phase 4.
 - Gắn tag và push ngay khi mỗi phase PASS, không dồn tới cuối.
+- Chốt sớm rằng số bench tự đo chỉ để tham khảo, không chạy lại nhiều lần để mong ra số đẹp hơn: vừa tốn token vừa tốn thời gian.

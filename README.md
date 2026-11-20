@@ -15,7 +15,7 @@ Game 3D góc nhìn thứ ba. Mây, người giữ đèn nhỏ tuổi đội nón
 ## Cài đặt và chơi (3 lệnh)
 
 ```bash
-git clone <link-repo> && cd K5-L3A-DAY12-DuongMinhTan-2A202603464-AI-SDLC-Dao-Den-Long
+git clone https://github.com/mihtan05/K5-L3A-DAY12-DuongMinhTan-2A202603464-AI-SDLC-Dao-Den-Long.git && cd K5-L3A-DAY12-DuongMinhTan-2A202603464-AI-SDLC-Dao-Den-Long
 npm ci
 npm start
 ```
