@@ -4,7 +4,13 @@
 
 Game 3D góc nhìn thứ ba. Mây, người giữ đèn nhỏ tuổi đội nón lá, gom đom đóm để thắp và **giữ cho Đèn Lồng Lớn còn dầu tới bình minh** trên **ba hòn đảo trong ba đêm**, né Bóng Mực và Gió Lạc trong sương đen. Có bảng xếp hạng cục bộ, đổi phím, phụ đề, giảm chuyển động và chữ lớn.
 
-![Đêm 3, Đảo Chuông](docs/proof/phase-4/11-play-night3.png)
+![Mây bên Đèn Lồng Lớn vừa thắp, Đảo Bến](docs/images/hero.png)
+
+| Đêm 1 — Đảo Bến | Đêm 2 — Đảo Cau | Đêm 3 — Đảo Chuông |
+|---|---|---|
+| ![Đảo Bến](docs/images/island-ben.png) | ![Đảo Cau: hai đảo nối bằng cầu](docs/images/island-cau.png) | ![Đảo Chuông: ba tầng và tháp chuông](docs/images/island-chuong.png) |
+
+Ảnh chụp bản mới nhất trên `main` (đồ họa nâng cấp sau v1.0.0). Ảnh dùng làm bằng chứng từng phase nằm trong `docs/proof/`.
 
 ## Yêu cầu hệ thống
 
@@ -24,7 +30,9 @@ npm start
 
 Cách khác:
 - `npm run dev`: chế độ phát triển (Vite), cũng lưu bảng xếp hạng vào `data/`.
-- **Release v1.0.0**: tải file zip, giải nén, rồi chạy `node scripts/server.mjs`. Bản này không cần `npm`.
+- **[Release mới nhất](https://github.com/mihtan05/K5-L3A-DAY12-DuongMinhTan-2A202603464-AI-SDLC-Dao-Den-Long/releases/latest)** (v1.1.0, đồ họa mới + Chọn đảo) hoặc **v1.0.0** (bản nộp Phase 4): tải file zip, giải nén, rồi chạy `node scripts/server.mjs`. Không cần `npm`.
+
+Menu chính: **Bắt đầu** chơi lần lượt 3 Đêm và được lưu bảng xếp hạng; **Chọn đảo** chơi luyện tập thẳng một Đêm bất kỳ (không lưu điểm).
 
 ## Điều khiển (đổi được trong Cài đặt → Đổi phím)
 
@@ -50,7 +58,7 @@ Cách khác:
 
 - **3 Đêm:**
   - Đảo Bến: 5 đèn, 4:00.
-  - Đảo Cau: 6 đèn, 4:30. Hai đảo nối bằng cầu tre và bục nhảy.
+  - Đảo Cau: 6 đèn, 4:30. Hai đảo nối bằng cầu gỗ và bục nhảy.
   - Đảo Chuông: 7 đèn, 5:00. Ba tầng, có dốc, bục nhảy và gió mạnh.
 
   Thua thì chơi lại Đêm đó. Thắng Đêm 3 thì tới màn Bình Minh.
