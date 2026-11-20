@@ -1,0 +1,182 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "main menu",
+   "ok": true
+  },
+  {
+   "name": "settings (volume, mouse, colorblind palette) saved between sessions",
+   "ok": true,
+   "info": {
+    "volume": 0.3,
+    "sens": 1.8,
+    "colorblind": true
+   }
+  },
+  {
+   "name": "night intro shows island name and Ông Đăng",
+   "ok": true
+  },
+  {
+   "name": "move with W",
+   "ok": true,
+   "info": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     7.2
+    ]
+   ]
+  },
+  {
+   "name": "jump",
+   "ok": true,
+   "info": [
+    0,
+    0.83,
+    7.2
+   ]
+  },
+  {
+   "name": "dash (Shift) starts cooldown",
+   "ok": true,
+   "info": 84
+  },
+  {
+   "name": "dash moves ~2.8 m extra",
+   "ok": true
+  },
+  {
+   "name": "HUD: flames, mm:ss clock, k/n lanterns + need, score, carried/capacity, 2 cooldowns",
+   "ok": true,
+   "info": {
+    "flames": 3,
+    "clock": "03:57",
+    "lanterns": "🏮 Đèn sáng 0/5 · cần 3",
+    "score": "⭐ 0",
+    "cells": 10,
+    "cds": 2,
+    "barText": "0/10"
+   }
+  },
+  {
+   "name": "prompt \"E — Nạp ánh sáng (x/10)\" near a lantern",
+   "ok": true,
+   "info": "E — Nạp ánh sáng (0/10)"
+  },
+  {
+   "name": "lighting raises capacity to 12; refuel prompt on a lit lantern",
+   "ok": true,
+   "info": {
+    "lit": true,
+    "bar": "0/12",
+    "prompt": "E — Châm dầu (99/100)"
+   }
+  },
+  {
+   "name": "lantern runs out of fuel -> off, deposited 0, ever_lit",
+   "ok": true,
+   "info": {
+    "id": "L1",
+    "pos": [
+     0,
+     0,
+     25
+    ],
+    "lit": false,
+    "deposited": 0,
+    "fuel": 0,
+    "everLit": true,
+    "relitCount": 0
+   }
+  },
+  {
+   "name": "arrow to nearest unlit lantern when off-screen",
+   "ok": true
+  },
+  {
+   "name": "clock red + blinking at <= 30 s",
+   "ok": true,
+   "info": "rgb(255, 90, 95)"
+  },
+  {
+   "name": "Esc pauses: sim frozen, menu has 4 options",
+   "ok": true,
+   "info": [
+    325,
+    325,
+    344,
+    374
+   ]
+  },
+  {
+   "name": "resume",
+   "ok": true
+  },
+  {
+   "name": "FPS >= 30 at 1280x720",
+   "ok": true,
+   "info": "120.1"
+  },
+  {
+   "name": "lose shows \"Chơi lại Đêm\"",
+   "ok": true
+  },
+  {
+   "name": "retry returns to the same night intro",
+   "ok": true
+  },
+  {
+   "name": "colorblind: UI warning is white with ⚠",
+   "ok": true,
+   "info": {
+    "text": "⚠ 00:25",
+    "color": "rgb(255, 255, 255)"
+   }
+  },
+  {
+   "name": "night 1 won at dawn",
+   "ok": true
+  },
+  {
+   "name": "night 2 intro",
+   "ok": true
+  },
+  {
+   "name": "night 2 won at dawn",
+   "ok": true
+  },
+  {
+   "name": "night 3 intro",
+   "ok": true
+  },
+  {
+   "name": "night 3 won at dawn",
+   "ok": true
+  },
+  {
+   "name": "Dawn screen with total = sum of won nights",
+   "ok": true,
+   "info": {
+    "scores": [
+     1040,
+     1188,
+     1336
+    ],
+    "total": 3564
+   }
+  },
+  {
+   "name": "no console errors",
+   "ok": true,
+   "info": []
+  }
+ ],
+ "errors": []
+}

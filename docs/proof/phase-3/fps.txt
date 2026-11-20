@@ -1,0 +1,6 @@
+average FPS over 5 s, night 1, 1280x720: 120.1
+GPU renderer: ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001638) Direct3D11 vs_5_0 ps_5_0, D3D11)
+browser: msedge 157.0.4341.60
+CPU: AMD Ryzen 5 5600H with Radeon Graphics          x12
+RAM: 15.4 GB
+OS: Windows_NT 10.0.26200

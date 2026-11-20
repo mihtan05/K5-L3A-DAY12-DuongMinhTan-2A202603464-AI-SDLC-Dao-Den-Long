@@ -1,0 +1,38 @@
+verify @ 6eee8a3 (2026-11-20T09:25:11.931Z)
+unit tests: PASS
+all-lit-no-early-win: exit=0 (want 0) deterministic=true expect=ok -> PASS
+bad-inputs: exit=2 (want 2) deterministic=true -> PASS
+bad-scenario: exit=2 (want 2) deterministic=true -> PASS
+capacity: exit=0 (want 0) deterministic=true expect=ok -> PASS
+charm: exit=0 (want 0) deterministic=true expect=ok -> PASS
+dash: exit=0 (want 0) deterministic=true expect=ok -> PASS
+dawn-lose: exit=0 (want 0) deterministic=true expect=ok -> PASS
+dawn-no-flames: exit=0 (want 0) deterministic=true expect=ok -> PASS
+dawn-win: exit=0 (want 0) deterministic=true expect=ok -> PASS
+dawn: exit=0 (want 0) deterministic=true expect=ok -> PASS
+default-seed1: exit=0 (want 0) deterministic=true -> PASS
+drain-pulse: exit=0 (want 0) deterministic=true expect=ok -> PASS
+drain: exit=0 (want 0) deterministic=true expect=ok -> PASS
+drifter-drop: exit=0 (want 0) deterministic=true expect=ok -> PASS
+drifter-spawn: exit=0 (want 0) deterministic=true expect=ok -> PASS
+drifter-steal: exit=0 (want 0) deterministic=true expect=ok -> PASS
+fall: exit=0 (want 0) deterministic=true expect=ok -> PASS
+fuel-out: exit=0 (want 0) deterministic=true expect=ok -> PASS
+hit-lose: exit=0 (want 0) deterministic=true expect=ok -> PASS
+night2-default: exit=0 (want 0) deterministic=true -> PASS
+night2-pad: exit=0 (want 0) deterministic=true expect=ok -> PASS
+night3-default: exit=0 (want 0) deterministic=true -> PASS
+night3-full-perf: exit=0 (want 0) deterministic=true expect=ok -> PASS
+night3-pad: exit=0 (want 0) deterministic=true expect=ok -> PASS
+night3-ramp: exit=0 (want 0) deterministic=true expect=ok -> PASS
+pause: exit=0 (want 0) deterministic=true expect=ok -> PASS
+pulse: exit=0 (want 0) deterministic=true expect=ok -> PASS
+refuel-expel: exit=0 (want 0) deterministic=true expect=ok -> PASS
+refuel: exit=0 (want 0) deterministic=true expect=ok -> PASS
+relight: exit=0 (want 0) deterministic=true expect=ok -> PASS
+safe-radius: exit=0 (want 0) deterministic=true expect=ok -> PASS
+safe-zone-expel: exit=0 (want 0) deterministic=true expect=ok -> PASS
+shade-schedule: exit=0 (want 0) deterministic=true expect=ok -> PASS
+walk-pickup: exit=0 (want 0) deterministic=true expect=ok -> PASS
+wind: exit=0 (want 0) deterministic=true expect=ok -> PASS
+RESULT: PASS
