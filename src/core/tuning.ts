@@ -1,39 +1,75 @@
-// Single source of truth for gameplay numbers. game.contract.json "tuning" must equal TUNING (tests/contract.test.ts).
+// Single source of truth for gameplay numbers (Ticket-02 standard values).
+// game.contract.json "tuning" must equal TUNING (tests/contract.test.ts).
 export const TUNING = {
   player_speed: 6, // m/s
   carry_capacity: 10, // motes
-  lantern_cost: 5, // motes needed to light one lantern
+  lantern_cost: 10, // motes needed to light one lantern
   lantern_count_night1: 5,
-  pickup_radius: 1.0, // m, motes are picked automatically
-  interact_radius: 2.5, // m, deposit range to lantern base
-  pulse_cost: 2, // carried motes spent per pulse
-  pulse_radius: 6, // m
+  pickup_radius: 1.0, // m (XZ), automatic
+  interact_radius: 2.0, // m (XZ)
+  pulse_cost: 3,
+  pulse_radius: 5, // m (3D, from foot + 0.8 m)
   night1_duration_s: 300,
-  flames: 3, // player health
-  invuln_s: 2,
-  hit_drop_ratio: 0.5, // floor(carried * ratio) motes lost on hit
-  pulse_stun_s: 3,
+  flames: 3,
+  invuln_s: 1.5,
+  hit_drop_ratio: 0.5,
+  pulse_stun_s: 2,
   pulse_push_m: 4,
-  pulse_cooldown_s: 1,
-  safe_radius: 4, // around LIT lanterns, shades cannot enter
-  shade_speed: 3.5, // m/s
+  pulse_cooldown_s: 3,
+  safe_radius: 6,
+  shade_speed: 4.0,
   shade_hit_radius: 1.0,
-  fall_enabled: false, // player is kept inside the island edge
-  score: { per_mote: 10, per_lantern: 100, per_stun: 20, per_second_left: 1, per_flame_left: 50 },
+  fall_enabled: true,
+  score: { per_mote: 10, per_lantern: 100, per_stun: 5, per_second_left: 2, per_flame_left: 50 },
+  dash_speed: 14,
+  dash_duration_s: 0.2,
+  dash_cooldown_s: 1.5,
+  night2_duration_s: 330,
+  night3_duration_s: 360,
 } as const;
 
-// Internal numbers (not part of the contract).
-export const WORLD = {
-  island_radius: 30,
-  lantern_ring_radius: 18,
-  jump_speed: 5, // m/s
-  gravity: 15, // m/s^2
-  shade_height: 1.0, // y of shade center for spawned shades
-  motes_initial: 30,
+// Standard numbers from Ticket-02 that are not contract keys, in ticks / m / m/s.
+export const RULES = {
+  jump_speed: 7,
+  gravity: 20,
+  step_up: 0.3, // max climb per tick; higher is a cliff (assumption B2)
+  pickup_dy: 1.5, // max height difference for pickup and shade touch
+  motes_initial: 20,
   motes_max: 30,
-  mote_respawn_s: 2,
-  shades_initial: 2,
-  shades_max: 5,
-  shade_spawn_s: 40,
-  shade_spawn_ring: 27, // spawned on this radius
-};
+  mote_spawn_every: 240,
+  dropped_ttl: 480,
+  drop_ring: [1.5, 2.5],
+  pulse_center_dy: 0.8,
+  pulse_push_ticks: 15,
+  shade_speed_night3: 4.5,
+  shade_detect: 12,
+  shade_giveup: 18,
+  shade_spawn_min_dist: 15,
+  shade_first_spawn: 300,
+  shade_height: 1.0, // shade center above ground
+  shade_spawning_ticks: 60, // assumption B6
+  shade_wander_speed: 2, // assumption B6
+  recoil_m: 2,
+  recoil_ticks: 60,
+  expel_ticks: 30,
+  fall_y: -10,
+  respawn_wait: 60,
+  drifter_speed: 7,
+  drifter_idle_speed: 2,
+  drifter_max: 2,
+  drifter_spawn_every: 1200,
+  drifter_carry_trigger: 5,
+  drifter_detect: 15,
+  drifter_touch: 1.2,
+  drifter_steal: 3,
+  drifter_flee_ticks: 240,
+  drifter_drop_flee_ticks: 120,
+  drifter_height: 1.5,
+  charm_ticks: 600,
+  charm_respawn: 2700,
+  charm_speed: 7.2,
+  wind_every: 1800,
+  wind_ticks: 300,
+  wind_warn: 120,
+  wind_speed: 2,
+} as const;

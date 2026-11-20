@@ -1,5 +1,6 @@
 // Trust boundary: CLI args, inputs file and scenario file. Bad files -> FormatError (exit 2), bad args -> UsageError (exit 1).
-import type { Input, Scenario, Vec3 } from '../core/sim';
+import { DRIFTER_STATES, SHADE_STATES, type Input, type Scenario, type Vec3 } from '../core/sim';
+import { mapFor } from '../core/maps';
 
 export class FormatError extends Error {}
 export class UsageError extends Error {}
@@ -39,7 +40,7 @@ export function parseArgs(argv: string[]): Args {
   const out = m.get('out');
   if (!out) throw new UsageError('missing --out');
   const night = int('night', 1);
-  if (night !== 1) throw new UsageError(`--night ${night} not available (only night 1)`);
+  if (night > 3) throw new UsageError('--night must be 1, 2 or 3');
   return {
     seed: int('seed', Number.MIN_SAFE_INTEGER),
     night,
@@ -71,7 +72,7 @@ export function parseInputs(text: string): Frame[] {
       if (!isNum(f.cam_yaw_deg)) throw new FormatError(`${w}.cam_yaw_deg: expected number`);
       fr.cam_yaw_deg = f.cam_yaw_deg;
     }
-    for (const k of ['jump', 'interact', 'pulse'] as const) {
+    for (const k of ['jump', 'interact', 'pulse', 'dash', 'pause'] as const) {
       if (!(k in f)) continue;
       if (typeof f[k] !== 'boolean') throw new FormatError(`${w}.${k}: expected boolean`);
       fr[k] = f[k] as boolean;
@@ -80,56 +81,90 @@ export function parseInputs(text: string): Frame[] {
   });
 }
 
-export function parseScenario(text: string): Scenario {
+export function parseScenario(text: string, night = 1): Scenario {
   const d = json(text, 'scenario');
   if (!isObj(d)) throw new FormatError('scenario: expected an object');
   const sc: Scenario = {};
+  const uint = (o: Record<string, unknown>, k: string, w: string) => {
+    if (!Number.isInteger(o[k]) || (o[k] as number) < 0) throw new FormatError(`${w}.${k}: expected integer >= 0`);
+    return o[k] as number;
+  };
+  const bool = (o: Record<string, unknown>, k: string, w: string) => {
+    if (typeof o[k] !== 'boolean') throw new FormatError(`${w}.${k}: expected boolean`);
+    return o[k] as boolean;
+  };
+  const arr = (k: string) => {
+    if (!Array.isArray(d[k])) throw new FormatError(`scenario.${k}: expected array`);
+    return d[k] as unknown[];
+  };
+  const ids = new Set<string>();
+  const id = (o: Record<string, unknown>, w: string) => {
+    if (!('id' in o)) return {};
+    if (typeof o.id !== 'string' || !o.id || ids.has(o.id)) throw new FormatError(`${w}.id: expected unique non-empty string`);
+    ids.add(o.id);
+    return { id: o.id };
+  };
+  const state = <S extends string>(o: Record<string, unknown>, w: string, allowed: readonly S[]) => {
+    if (!('state' in o)) return {};
+    if (!allowed.includes(o.state as S)) throw new FormatError(`${w}.state: expected one of ${allowed.join(', ')}`);
+    return { state: o.state as S };
+  };
+
   if ('player' in d) {
     const p = d.player;
     if (!isObj(p)) throw new FormatError('scenario.player: expected object');
-    sc.player = {};
-    if ('pos' in p) sc.player.pos = vec3(p.pos, 'scenario.player.pos');
-    for (const k of ['carried', 'flames'] as const)
-      if (k in p) {
-        if (!Number.isInteger(p[k]) || (p[k] as number) < 0) throw new FormatError(`scenario.player.${k}: expected integer >= 0`);
-        sc.player[k] = p[k] as number;
-      }
+    const out: NonNullable<Scenario['player']> = {};
+    if ('pos' in p) out.pos = vec3(p.pos, 'scenario.player.pos');
+    for (const k of ['carried', 'flames', 'invuln_ticks', 'dash_cd_ticks', 'pulse_cd_ticks', 'charm_ticks'] as const)
+      if (k in p) out[k] = uint(p, k, 'scenario.player');
+    sc.player = out;
   }
-  for (const k of ['random_motes', 'random_shades'] as const)
-    if (k in d) {
-      if (typeof d[k] !== 'boolean') throw new FormatError(`scenario.${k}: expected boolean`);
-      sc[k] = d[k] as boolean;
-    }
-  if ('motes' in d) {
-    if (!Array.isArray(d.motes)) throw new FormatError('scenario.motes: expected array');
-    sc.motes = d.motes.map((m, i) => vec3(m, `scenario.motes[${i}]`));
-  }
-  if ('shades' in d) {
-    if (!Array.isArray(d.shades)) throw new FormatError('scenario.shades: expected array');
-    const seen = new Set<string>();
-    sc.shades = d.shades.map((s, i) => {
-      if (!isObj(s)) throw new FormatError(`scenario.shades[${i}]: expected object`);
-      if ('id' in s && (typeof s.id !== 'string' || !s.id || seen.has(s.id)))
-        throw new FormatError(`scenario.shades[${i}].id: expected unique non-empty string`);
-      if (typeof s.id === 'string') seen.add(s.id);
-      return { ...(typeof s.id === 'string' ? { id: s.id } : {}), pos: vec3(s.pos, `scenario.shades[${i}].pos`) };
+  for (const k of ['random_motes', 'random_shades', 'random_drifters', 'wind_enabled'] as const) if (k in d) sc[k] = bool(d, k, 'scenario');
+  if ('motes' in d) sc.motes = arr('motes').map((m, i) => vec3(m, `scenario.motes[${i}]`));
+  if ('shades' in d)
+    sc.shades = arr('shades').map((s, i) => {
+      const w = `scenario.shades[${i}]`;
+      if (!isObj(s)) throw new FormatError(`${w}: expected object`);
+      return {
+        ...id(s, w),
+        pos: vec3(s.pos, `${w}.pos`),
+        ...state(s, w, SHADE_STATES),
+        ...('state_ticks_left' in s ? { state_ticks_left: uint(s, 'state_ticks_left', w) } : {}),
+      };
     });
-  }
+  if ('drifters' in d)
+    sc.drifters = arr('drifters').map((s, i) => {
+      const w = `scenario.drifters[${i}]`;
+      if (!isObj(s)) throw new FormatError(`${w}: expected object`);
+      return {
+        ...id(s, w),
+        pos: vec3(s.pos, `${w}.pos`),
+        ...state(s, w, DRIFTER_STATES),
+        ...('stolen' in s ? { stolen: uint(s, 'stolen', w) } : {}),
+        ...('state_ticks_left' in s ? { state_ticks_left: uint(s, 'state_ticks_left', w) } : {}),
+      };
+    });
+  if ('charms' in d)
+    sc.charms = arr('charms').map((c, i) => {
+      const w = `scenario.charms[${i}]`;
+      if (!isObj(c)) throw new FormatError(`${w}: expected object`);
+      return {
+        ...id(c, w),
+        ...('pos' in c ? { pos: vec3(c.pos, `${w}.pos`) } : {}),
+        ...('available' in c ? { available: bool(c, 'available', w) } : {}),
+        ...('respawn_ticks' in c ? { respawn_ticks: uint(c, 'respawn_ticks', w) } : {}),
+      };
+    });
   if ('lanterns' in d) {
-    if (!Array.isArray(d.lanterns)) throw new FormatError('scenario.lanterns: expected array');
-    sc.lanterns = d.lanterns.map((l, i) => {
+    const n = mapFor(night).lanterns.length;
+    sc.lanterns = arr('lanterns').map((l, i) => {
       const w = `scenario.lanterns[${i}]`;
-      if (!isObj(l) || typeof l.id !== 'string' || !/^L[1-5]$/.test(l.id)) throw new FormatError(`${w}.id: expected L1..L5`);
-      const out: NonNullable<Scenario['lanterns']>[number] = { id: l.id };
+      const k = isObj(l) && typeof l.id === 'string' ? /^L(\d+)$/.exec(l.id) : null;
+      if (!isObj(l) || !k || +k[1] < 1 || +k[1] > n) throw new FormatError(`${w}.id: expected L1..L${n}`);
+      const out: NonNullable<Scenario['lanterns']>[number] = { id: l.id as string };
       if ('pos' in l) out.pos = vec3(l.pos, `${w}.pos`);
-      if ('lit' in l) {
-        if (typeof l.lit !== 'boolean') throw new FormatError(`${w}.lit: expected boolean`);
-        out.lit = l.lit;
-      }
-      if ('deposited' in l) {
-        if (!Number.isInteger(l.deposited) || (l.deposited as number) < 0) throw new FormatError(`${w}.deposited: expected integer >= 0`);
-        out.deposited = l.deposited as number;
-      }
+      if ('lit' in l) out.lit = bool(l, 'lit', w);
+      if ('deposited' in l) out.deposited = uint(l, 'deposited', w);
       return out;
     });
   }
