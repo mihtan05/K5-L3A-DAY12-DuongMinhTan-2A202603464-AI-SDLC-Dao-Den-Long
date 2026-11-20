@@ -1,0 +1,330 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "main menu",
+   "ok": true
+  },
+  {
+   "name": "settings (volume, mouse, colorblind palette) saved between sessions",
+   "ok": true,
+   "info": {
+    "volume": 0.3,
+    "sens": 1.8,
+    "colorblind": true,
+    "keys": {
+     "up": "KeyW",
+     "down": "KeyS",
+     "left": "KeyA",
+     "right": "KeyD",
+     "jump": "Space",
+     "dash": "ShiftLeft",
+     "interact": "KeyE",
+     "pulse": "KeyF",
+     "pause": "Escape"
+    },
+    "captions": true,
+    "reduceMotion": false,
+    "largeText": false
+   }
+  },
+  {
+   "name": "rebinding: a key used by another action is refused and reported",
+   "ok": true,
+   "info": {
+    "msg": "⚠ Phím W đang dùng cho \"Đi tới\". Chọn phím khác hoặc đổi phím của \"Đi tới\" trước.",
+    "jump": "Space"
+   }
+  },
+  {
+   "name": "rebinding screen lists move x4, jump, dash, interact, pulse, pause + \"Khôi phục mặc định\"",
+   "ok": true
+  },
+  {
+   "name": "menus: every text >= 18 px at 1280x720",
+   "ok": true,
+   "info": {
+    "min": 18,
+    "at": "keymsg"
+   }
+  },
+  {
+   "name": "rebinding saved between sessions (jump = J)",
+   "ok": true
+  },
+  {
+   "name": "night intro shows island name and Ông Đăng",
+   "ok": true
+  },
+  {
+   "name": "move with W",
+   "ok": true,
+   "info": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     7.3
+    ]
+   ]
+  },
+  {
+   "name": "jump with the rebound key J",
+   "ok": true,
+   "info": [
+    0,
+    0.76,
+    7.3
+   ]
+  },
+  {
+   "name": "dash (Shift) starts cooldown",
+   "ok": true,
+   "info": 85
+  },
+  {
+   "name": "dash moves ~2.8 m extra",
+   "ok": true
+  },
+  {
+   "name": "HUD: flames, mm:ss clock, k/n lanterns + need, score, carried/capacity, 2 cooldowns",
+   "ok": true,
+   "info": {
+    "flames": 3,
+    "clock": "03:57",
+    "lanterns": "🏮 Đèn sáng 0/5 · cần 3",
+    "score": "⭐ 0",
+    "cells": 10,
+    "cds": 2,
+    "barText": "0/10"
+   }
+  },
+  {
+   "name": "HUD: every text >= 18 px at 1280x720",
+   "ok": true,
+   "info": {
+    "min": 18,
+    "at": "help"
+   }
+  },
+  {
+   "name": "prompt \"E — Nạp ánh sáng (x/10)\" near a lantern",
+   "ok": true,
+   "info": "E — Nạp ánh sáng (0/10)"
+  },
+  {
+   "name": "lighting raises capacity to 12; refuel prompt on a lit lantern",
+   "ok": true,
+   "info": {
+    "lit": true,
+    "bar": "0/12",
+    "prompt": "E — Châm dầu (99/100)"
+   }
+  },
+  {
+   "name": "lantern runs out of fuel -> off, deposited 0, ever_lit",
+   "ok": true,
+   "info": {
+    "id": "L1",
+    "pos": [
+     0,
+     0,
+     25
+    ],
+    "lit": false,
+    "deposited": 0,
+    "fuel": 0,
+    "everLit": true,
+    "relitCount": 0
+   }
+  },
+  {
+   "name": "arrow to nearest unlit lantern when off-screen",
+   "ok": true
+  },
+  {
+   "name": "clock red + blinking at <= 30 s",
+   "ok": true,
+   "info": "rgb(255, 90, 95)"
+  },
+  {
+   "name": "Esc pauses: sim frozen, menu has 4 options",
+   "ok": true,
+   "info": [
+    324,
+    324,
+    343,
+    374
+   ]
+  },
+  {
+   "name": "resume",
+   "ok": true
+  },
+  {
+   "name": "caption + edge arrow when a shade appears",
+   "ok": true,
+   "info": {
+    "cap": "👁 Bóng Mực xuất hiện!",
+    "arrow": true,
+    "left": "640px",
+    "top": "666px"
+   }
+  },
+  {
+   "name": "captions: lantern fuel < 30 and last 10 s",
+   "ok": true,
+   "info": "👁 Bóng Mực xuất hiện!\n🏮 Đèn L2 sắp cạn dầu!\n⏳ Còn 10 giây tới bình minh!"
+  },
+  {
+   "name": "hit: camera shake and screen flash",
+   "ok": true,
+   "info": {
+    "flash": true,
+    "shake": 0.019900000000372564
+   }
+  },
+  {
+   "name": "reduced motion: no camera shake, no flash",
+   "ok": true,
+   "info": {
+    "flashShown": false,
+    "shake": 0,
+    "hits": 1
+   }
+  },
+  {
+   "name": "large text: every text >= 22.5 px (18 x 1.25)",
+   "ok": true,
+   "info": {
+    "bigMenu": {
+     "min": 22.5,
+     "at": "help"
+    },
+    "bigHud": {
+     "min": 22.5,
+     "at": "help"
+    }
+   }
+  },
+  {
+   "name": "FPS >= 30 at 1280x720",
+   "ok": true,
+   "info": "120.1"
+  },
+  {
+   "name": "lose shows \"Chơi lại Đêm\"",
+   "ok": true
+  },
+  {
+   "name": "retry returns to the same night intro",
+   "ok": true
+  },
+  {
+   "name": "leaderboard: name shorter than 3 is refused",
+   "ok": true,
+   "info": "⚠ Tên cần 3–12 ký tự: chữ (có dấu cũng được), số hoặc _"
+  },
+  {
+   "name": "leaderboard: saved after a loss (Vietnamese name), board shown",
+   "ok": true
+  },
+  {
+   "name": "colorblind: UI warning is white with ⚠",
+   "ok": true,
+   "info": {
+    "text": "⚠ 00:25",
+    "color": "rgb(255, 255, 255)"
+   }
+  },
+  {
+   "name": "night 1 won at dawn",
+   "ok": true
+  },
+  {
+   "name": "night 2 intro",
+   "ok": true
+  },
+  {
+   "name": "night 2 won at dawn",
+   "ok": true
+  },
+  {
+   "name": "night 3 intro",
+   "ok": true
+  },
+  {
+   "name": "caption: wind coming (night 3)",
+   "ok": true,
+   "info": "🍃 Gió sắp thổi!"
+  },
+  {
+   "name": "night 3 won at dawn",
+   "ok": true
+  },
+  {
+   "name": "Dawn screen with total = sum of won nights",
+   "ok": true,
+   "info": {
+    "scores": [
+     1040,
+     1188,
+     1336
+    ],
+    "total": 3564
+   }
+  },
+  {
+   "name": "leaderboard from the main menu after reload: sorted by score, Dawn run (3 nights) first",
+   "ok": true,
+   "info": [
+    [
+     "1",
+     "Rong_3dem",
+     "3564",
+     "3",
+     "2026-11-20 17:14"
+    ],
+    [
+     "2",
+     "Mây_Smoke",
+     "0",
+     "0",
+     "2026-11-20 17:14"
+    ]
+   ]
+  },
+  {
+   "name": "export: {\"entries\": [...]} in board order with name, score, nights_won, achieved_at (with zone), seed",
+   "ok": true,
+   "info": {
+    "entries": [
+     {
+      "name": "Rong_3dem",
+      "score": 3564,
+      "nights_won": 3,
+      "achieved_at": "2026-11-20T17:14:50+07:00",
+      "seed": 1896575256
+     },
+     {
+      "name": "Mây_Smoke",
+      "score": 0,
+      "nights_won": 0,
+      "achieved_at": "2026-11-20T17:14:35+07:00",
+      "seed": 784322450
+     }
+    ]
+   }
+  },
+  {
+   "name": "no console errors",
+   "ok": true,
+   "info": []
+  }
+ ],
+ "errors": []
+}
