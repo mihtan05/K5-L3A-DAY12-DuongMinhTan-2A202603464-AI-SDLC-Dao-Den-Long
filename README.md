@@ -1,6 +1,7 @@
 # Đảo Đèn Lồng
 
-> 🎬 Video demo: *(chưa có: sẽ đính kèm vào GitHub Release v1.0.0 sau khi quay)*
+> 🎬 **Video demo (3:45, mp4):** [demo.mp4 trong Release v1.0.0](https://github.com/mihtan05/K5-L3A-DAY12-DuongMinhTan-2A202603464-AI-SDLC-Dao-Den-Long/releases/download/v1.0.0/demo.mp4) · cùng file ở [Release v1.1.0](https://github.com/mihtan05/K5-L3A-DAY12-DuongMinhTan-2A202603464-AI-SDLC-Dao-Den-Long/releases/download/v1.1.0/demo.mp4)
+> Quay sau giờ lab, trên bản v1.1.0: chơi (script bấm phím thật), `npm test`, `npm run verify`, bench, harness AI, lịch sử git.
 
 Game 3D góc nhìn thứ ba. Mây, người giữ đèn nhỏ tuổi đội nón lá, gom đom đóm để thắp và **giữ cho Đèn Lồng Lớn còn dầu tới bình minh** trên **ba hòn đảo trong ba đêm**, né Bóng Mực và Gió Lạc trong sương đen. Có bảng xếp hạng cục bộ, đổi phím, phụ đề, giảm chuyển động và chữ lớn.
 

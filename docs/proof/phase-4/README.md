@@ -86,7 +86,7 @@ Như vậy RSS tăng do allocator và JIT khởi động, không do rò bộ nh�
 | 5.4 | GitHub Release v1.0.0 có bản chạy được | — | Release `v1.0.0`: `dao-den-long-v1.0.0-web.zip` (`dist/` + `scripts/server.mjs` + `src/leaderboard.ts`, chạy bằng `node scripts/server.mjs`) | PASS |
 | 6 | Contract v1.3, có `bench_cmd` và `soak_cmd`, giữ mọi yêu cầu v1.0–v1.2 | unit + verify | `contract.test`; 35 scenario cũ vẫn PASS | PASS |
 | 7.1 | Retro 1–2 trang | tài liệu | `docs/notes/retro.md`, token theo phase trong `docs/notes/ai-log.md` | PASS |
-| 7.2 | Video demo `.mp4` dưới 5 phút | — | — | **CHƯA LÀM** |
+| 7.2 | Video demo `.mp4` dưới 5 phút | xem video | `demo.mp4` (3:45, 1280×720, có tiếng game) đính kèm Release v1.0.0 và v1.1.0, link ở đầu README | **Làm sau giờ lab** (2026-11-20, tối): không kịp trước hạn Phase 4. Video quay bản v1.1.0 (đồ họa mới), không phải mã ở tag `phase-4`; phần chơi do script Playwright bấm phím thật; đoạn thắng được rút ngắn bằng cách dựng trạng thái như smoke test (có ghi trên màn hình) |
 | DoD | Tag `phase-4` và Release v1.0.0 | — | tag `phase-4` trỏ vào commit này | PASS |
 | DoD | `bench.json` và `soak.json` tự chạy, đã commit | — | `bench.json`, `soak.json` ở thư mục gốc | PASS |
 | DoD | Test Phase 1–3 còn hiệu lực vẫn đạt | unit + verify | `unit-tests.txt`, `verify-summary.txt` | PASS (không chạy được bộ test ẩn của lab) |
