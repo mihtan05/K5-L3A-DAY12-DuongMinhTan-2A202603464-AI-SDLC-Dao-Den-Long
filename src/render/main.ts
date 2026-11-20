@@ -442,6 +442,8 @@ const setHTML = (id: string, v: string) => hudCache.get('h:' + id) !== v && (hud
 function draw(dt: number, t: number) {
   const g = game;
   const p = g.player;
+  const moved = Math.hypot(p.pos[0] - may.object.position.x, p.pos[2] - may.object.position.z);
+  may.animate(dt > 0 && moved < 2 ? moved / dt : 0, p.grounded, dt); // a jump > 2 m in one frame = respawn/teleport
   may.object.position.set(...p.pos);
   may.object.rotation.y = Math.atan2(p.facing[0], p.facing[1]);
   may.object.visible = p.respawn === 0 && (p.invuln === 0 || Math.floor(t * 10) % 2 === 0);
