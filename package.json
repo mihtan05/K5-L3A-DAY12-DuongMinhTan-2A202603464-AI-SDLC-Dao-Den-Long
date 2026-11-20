@@ -1,6 +1,6 @@
 {
   "name": "dao-den-long",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,10 @@
     "typecheck": "tsc --noEmit",
     "headless": "tsx src/headless/cli.ts",
     "verify": "node scripts/verify.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "start": "vite build --logLevel error && node scripts/server.mjs",
+    "soak": "tsx --expose-gc src/headless/soak.ts",
+    "bench": "vite build --logLevel error && node scripts/bench.mjs"
   },
   "dependencies": {
     "three": "^0.187.0"

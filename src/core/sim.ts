@@ -101,6 +101,7 @@ export type Game = {
   randomShades: boolean;
   randomDrifters: boolean;
   windEnabled: boolean;
+  bench: boolean; // Ticket-04 bench scene: no damage, pickup, fuel burn or end of night
   wind: { active: boolean; warn: boolean; dirDeg: number };
   ids: Record<'M' | 'S' | 'D' | 'C', number> & { used: Set<string> };
   prev: Input;
@@ -219,6 +220,7 @@ export function createGame(seed: number, sc: Scenario = {}, night: 1 | 2 | 3 = 1
     randomShades: sc.random_shades !== false,
     randomDrifters: sc.random_drifters !== false && map.drifters,
     windEnabled: sc.wind_enabled ?? map.wind,
+    bench: false,
     wind: { active: false, warn: false, dirDeg: 0 },
     ids: { M: 0, S: 0, D: 0, C: 0, used },
     prev: { ...IDLE },
@@ -318,8 +320,8 @@ export function step(g: Game, inp: Input): GameEvent[] {
     if (s.state === 'spawning' && --s.ticks <= 0) [s.state, s.ticks] = [aware(g, s.pos), 0];
   }
   // Fuel: lit lanterns burn 1/60 per tick, each draining shade takes 5/60 more; at 0 the lantern goes out.
-  for (const l of g.lanterns) if (l.lit) l.fuel -= FUEL_DECAY;
-  for (const s of [...g.shades].sort(byId)) {
+  if (!g.bench) for (const l of g.lanterns) if (l.lit) l.fuel -= FUEL_DECAY;
+  for (const s of g.bench ? [] : [...g.shades].sort(byId)) {
     if (s.state !== 'drain') continue;
     const l = g.lanterns.find((l) => l.id === s.lantern);
     if (!l?.lit) continue;
@@ -437,7 +439,7 @@ export function step(g: Game, inp: Input): GameEvent[] {
 
   // 4. Pick up motes and charms
   const reach = (pos: Vec3) => distXZ(pos, p.pos) <= T.pickup_radius + EPS && Math.abs(pos[1] - p.pos[1]) <= R.pickup_dy + EPS;
-  if (!waiting()) {
+  if (!waiting() && !g.bench) {
     g.motes = g.motes.filter((mo) => {
       if (p.carried >= capacity(p) || !reach(mo.pos)) return true;
       p.carried++;
@@ -601,7 +603,7 @@ export function step(g: Game, inp: Input): GameEvent[] {
   }
 
   // 9. Touch: drifters steal first, then one shade hit (ids ascending)
-  if (!waiting()) {
+  if (!waiting() && !g.bench) {
     for (const d of [...g.drifters].sort(byId)) {
       if ((d.state !== 'idle' && d.state !== 'chase') || d.robbed || p.carried === 0) continue;
       if (distXZ(d.pos, p.pos) > R.drifter_touch + EPS) continue;
@@ -661,6 +663,7 @@ export function step(g: Game, inp: Input): GameEvent[] {
   }
 
   // 11. Win / lose
+  if (g.bench) return finish();
   if (p.flames <= 0) {
     g.state = 'lost';
     emit('game_over', { result: 'lost', reason: 'no_flames' });

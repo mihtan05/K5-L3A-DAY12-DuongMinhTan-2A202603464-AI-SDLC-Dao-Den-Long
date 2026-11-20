@@ -88,4 +88,14 @@ export const RULES = {
   score_dawn_lantern: 50,
   drain_range: 2, // m: wander shade starts draining its weak lantern
   drain_break: 6, // m: May this close makes a draining shade chase
+  // Ticket-04 benchmark scene (render camera numbers live in src/render/bench.ts)
+  bench_shades: 200,
+  bench_motes: 100,
+  bench_lit: 3, // L1..L3 lit with fuel 100
+  // Ticket-04 soak input (probabilities per tick)
+  soak_dir_every: 30,
+  soak_p_jump: 0.05,
+  soak_p_dash: 0.03,
+  soak_p_pulse: 0.02,
+  soak_p_interact: 0.1,
 } as const;
