@@ -1,18 +1,20 @@
-// Procedural prefabs (self-made, no external license). Render-only: never import from src/core or headless.
+// Procedural prefabs (self-made, no external license). Render-only.
+// Colors of every component listed in Ticket-02 come from palette.ts.
 import * as THREE from 'three';
+import type { NightMap } from '../core/maps';
+import { P } from './palette';
 
-const AMBER = 0xffb347;
 const mat = (color: number, extra: THREE.MeshStandardMaterialParameters = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true, ...extra });
 
-/** Mây: chibi lantern keeper wearing a nón lá (conical hat). Feet at y=0, faces +Z. */
+/** Mây: chibi lantern keeper wearing a nón lá. Feet at y=0, faces +Z. */
 export function makeMay() {
   const g = new THREE.Group();
   const legs = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.35, 8), mat(0x3a2a22));
   legs.position.y = 0.18;
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.26, 0.45, 10), mat(0x8a5a3c)); // áo bà ba
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.26, 0.45, 10), mat(P.mayShirt)); // áo
   body.position.y = 0.55;
-  const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.06, 6, 14), mat(AMBER));
+  const scarf = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.06, 6, 14), mat(P.mayScarf)); // khăn
   scarf.rotation.x = Math.PI / 2;
   scarf.position.y = 0.78;
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 12), mat(0xf1d4b3));
@@ -23,24 +25,16 @@ export function makeMay() {
     eye.position.set(x, 1.0, 0.2);
     g.add(eye);
   }
-  // Nón lá: wide shallow cone + chin strap.
-  const hat = new THREE.Mesh(
-    new THREE.ConeGeometry(0.42, 0.24, 28, 1, true),
-    mat(0xe8d39a, { side: THREE.DoubleSide }),
-  );
+  const hat = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.24, 28, 1, true), mat(0xe8d39a, { side: THREE.DoubleSide }));
   hat.position.y = 1.2;
-  const strap = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.008, 4, 20, Math.PI), mat(0xb03030));
-  strap.position.set(0, 1.03, 0);
-  strap.rotation.z = Math.PI;
-  // Hand lantern: glows brighter with carried motes (see setGlow).
   const lantern = new THREE.Mesh(
     new THREE.CylinderGeometry(0.07, 0.07, 0.14, 8),
-    mat(AMBER, { emissive: AMBER, emissiveIntensity: 0.6 }),
+    mat(P.lanternLit, { emissive: P.lanternLit, emissiveIntensity: 0.6 }),
   );
   lantern.position.set(0.3, 0.5, 0.12);
-  const light = new THREE.PointLight(AMBER, 1.5, 4, 1.5);
+  const light = new THREE.PointLight(P.lanternLit, 1.5, 5, 1.5);
   light.position.copy(lantern.position);
-  g.add(legs, body, scarf, head, hat, strap, lantern, light);
+  g.add(legs, body, scarf, head, hat, lantern, light);
   const setGlow = (k: number) => {
     (lantern.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.4 + k * 1.6;
     light.intensity = 1 + k * 4;
@@ -48,13 +42,15 @@ export function makeMay() {
   return { object: g, setGlow };
 }
 
-/** Bóng Mực: soft wobbling ink blob with round sad eyes. Center at origin. */
+/** Bóng Mực: dark wobbling ink blob with a violet rim and round sad eyes. Center at origin. */
 export function makeShade() {
   const g = new THREE.Group();
   const geo = new THREE.IcosahedronGeometry(0.45, 2);
   const base = Float32Array.from(geo.attributes.position.array as Float32Array);
-  const m = mat(0x2a1838, { emissive: 0x3d1f5c, emissiveIntensity: 0.35, transparent: true, opacity: 0.92 });
+  const m = mat(P.shadeBody, { emissive: P.shadeRim, emissiveIntensity: 0.12, transparent: true, opacity: 0.95 });
   const blob = new THREE.Mesh(geo, m);
+  const rim = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: P.shadeRim, side: THREE.BackSide, transparent: true, opacity: 0.8 }));
+  rim.scale.setScalar(1.08);
   const eyeGeo = new THREE.SphereGeometry(0.06, 8, 8);
   const eyeMat = new THREE.MeshBasicMaterial({ color: 0xd8c8ff });
   for (const x of [-0.13, 0.13]) {
@@ -62,17 +58,20 @@ export function makeShade() {
     eye.position.set(x, 0.08, 0.4);
     g.add(eye);
   }
-  g.add(blob);
-  const update = (t: number, stunned = false) => {
+  g.add(blob, rim);
+  const update = (t: number, state: string) => {
     const p = geo.attributes.position.array as Float32Array;
     for (let i = 0; i < p.length; i += 3) {
       const w = 1 + 0.08 * Math.sin(t * 3 + base[i] * 6 + base[i + 1] * 4);
       p[i] = base[i] * w;
-      p[i + 1] = base[i + 1] * w * (base[i + 1] > 0 ? 1.15 : 1); // taller wavy top
+      p[i + 1] = base[i + 1] * w * (base[i + 1] > 0 ? 1.15 : 1);
       p[i + 2] = base[i + 2] * w;
     }
     geo.attributes.position.needsUpdate = true;
-    m.opacity = stunned ? 0.45 : 0.92; // stunned: fades like mist, no violence
+    const stunned = state === 'stunned';
+    m.color.set(stunned ? P.shadeStunned : P.shadeBody);
+    rim.visible = !stunned;
+    m.opacity = state === 'spawning' ? 0.4 + 0.3 * Math.sin(t * 8) : stunned ? 0.6 : 0.95;
     g.scale.setScalar(stunned ? 0.8 : 1);
   };
   return { object: g, update };
@@ -81,45 +80,154 @@ export function makeShade() {
 /** Đèn Lồng Lớn. Base of pillar at y=0. */
 export function makeBigLantern() {
   const g = new THREE.Group();
-  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.22, 1.6, 8), mat(0x5b4636));
+  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.22, 1.6, 8), mat(P.wood));
   pillar.position.y = 0.8;
-  const cageMat = mat(0x6b6b6b, { emissive: AMBER, emissiveIntensity: 0 });
+  const cageMat = mat(P.lanternOff, { emissive: P.lanternLit, emissiveIntensity: 0 });
   const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.32, 0.7, 8), cageMat);
   cage.position.y = 1.95;
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), new THREE.MeshBasicMaterial({ color: P.lanternCore }));
+  core.position.y = 1.95;
   const roof = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.35, 8), mat(0x7a2e1e));
   roof.position.y = 2.47;
-  const light = new THREE.PointLight(AMBER, 0, 9, 1.5);
+  const light = new THREE.PointLight(P.lanternLit, 0, 12, 1.5);
   light.position.y = 2;
-  g.add(pillar, cage, roof, light);
+  g.add(pillar, cage, core, roof, light);
   const setLevel = (fill: number, lit: boolean) => {
-    cageMat.color.set(lit ? 0xffe0a0 : 0x6b6b6b);
-    cageMat.emissiveIntensity = lit ? 2 : fill * 0.8;
-    light.intensity = lit ? 6 : fill * 1.5;
+    cageMat.color.set(lit ? P.lanternLit : P.lanternOff);
+    cageMat.emissiveIntensity = lit ? 1.6 : fill * 0.6;
+    core.visible = lit || fill > 0;
+    core.scale.setScalar(lit ? 1 : 0.4 + fill * 0.6);
+    light.intensity = lit ? 8 : fill * 1.5;
   };
   return { object: g, setLevel };
 }
 
-/** Đom đóm: additive glowing dot. Ground position at y=0, hovers above. */
+/** Đom đóm: additive glowing dot (core → halo). */
 export function makeMote() {
-  const s = new THREE.Sprite(
-    new THREE.SpriteMaterial({ map: glowTexture(), color: 0xfff1a8, blending: THREE.AdditiveBlending, depthWrite: false }),
-  );
-  s.scale.setScalar(0.35);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), blending: THREE.AdditiveBlending, depthWrite: false }));
+  s.scale.setScalar(0.4);
   return s;
 }
 
-export function makeIsland(radius: number) {
+/** Gió Lạc: grey-blue silk ribbon that ripples. Center at origin. */
+export function makeDrifter() {
+  const geo = new THREE.PlaneGeometry(0.35, 2.2, 1, 16);
+  const base = Float32Array.from(geo.attributes.position.array as Float32Array);
+  const m = new THREE.MeshStandardMaterial({ color: P.drifter, side: THREE.DoubleSide, transparent: true, opacity: 0.85, emissive: P.drifter, emissiveIntensity: 0.25 });
+  const mesh = new THREE.Mesh(geo, m);
+  mesh.rotation.z = Math.PI / 2.4;
   const g = new THREE.Group();
-  const ground = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 0.85, 1, 48), mat(0x3f5a3a));
-  ground.position.y = -0.5;
-  const water = new THREE.Mesh(
-    new THREE.CircleGeometry(radius * 4, 48),
-    new THREE.MeshStandardMaterial({ color: 0x141a2e, roughness: 0.3 }),
-  );
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = -0.6;
-  g.add(ground, water);
+  g.add(mesh);
+  const update = (t: number, state: string) => {
+    const p = geo.attributes.position.array as Float32Array;
+    for (let i = 0; i < p.length; i += 3) p[i + 2] = base[i + 2] + 0.25 * Math.sin(t * 6 + base[i + 1] * 3);
+    geo.attributes.position.needsUpdate = true;
+    m.opacity = state === 'flee' ? 0.5 : 0.85;
+  };
+  return { object: g, update };
+}
+
+/** Bùa Gió: red talisman with a gold border. */
+export function makeCharm() {
+  const g = new THREE.Group();
+  const border = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.72, 0.03), mat(P.gold, { emissive: P.gold, emissiveIntensity: 0.4 }));
+  const paper = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.62, 0.05), mat(P.mayScarf, { emissive: P.mayScarf, emissiveIntensity: 0.3 }));
+  g.add(border, paper);
   return g;
+}
+
+/** Island geometry for one night (matches the core ground() function). */
+export function makeWorld(map: NightMap) {
+  const g = new THREE.Group();
+  const grass = mat(P.grass);
+  const sand = mat(P.sand);
+  const disk = (r: number, top: number, depth: number, x = 0, z = 0, m: THREE.Material = grass) => {
+    const d = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.92, depth, 64), m);
+    d.position.set(x, top - depth / 2, z);
+    g.add(d);
+  };
+  const shore = (r: number, x = 0, z = 0) => {
+    const s = new THREE.Mesh(new THREE.RingGeometry(r - 1.5, r, 64), sand);
+    s.rotation.x = -Math.PI / 2;
+    s.position.set(x, 0.02, z);
+    g.add(s);
+  };
+  const sea = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: P.sea, roughness: 0.4 }));
+  sea.rotation.x = -Math.PI / 2;
+  sea.position.y = -6;
+  g.add(sea);
+  if (map.night === 1) {
+    disk(40, 0, 3);
+    shore(40);
+  } else if (map.night === 2) {
+    disk(28, 0, 3);
+    disk(28, 0, 3, 70);
+    shore(28);
+    shore(28, 70);
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(18, 0.3, 4), mat(P.wood));
+    bridge.position.set(35, -0.15, 0);
+    g.add(bridge);
+  } else {
+    disk(45, 0, 3);
+    shore(45);
+    const s = new THREE.Shape();
+    s.absarc(0, 0, 24, 0, Math.PI, false);
+    s.absarc(0, 0, 12, Math.PI, 0, true);
+    const tier1 = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 3, bevelEnabled: false, curveSegments: 32 }), grass);
+    tier1.rotation.x = Math.PI / 2; // shape y -> world z (> 0), extrude goes down
+    tier1.position.y = 3;
+    g.add(tier1);
+    const tier2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 6, 48), grass);
+    tier2.position.y = 3;
+    const tower = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 8, 16), mat(P.wood));
+    tower.position.y = 10;
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(3, 2, 8), mat(0x7a2e1e));
+    roof.position.y = 15;
+    const bell = new THREE.Mesh(new THREE.SphereGeometry(0.9, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat(P.gold, { metalness: 0.6 }));
+    bell.position.y = 13.2;
+    g.add(tier2, tower, roof, bell);
+    for (const a of [30, 150]) {
+      const [ux, uz] = [Math.cos((a * Math.PI) / 180), Math.sin((a * Math.PI) / 180)];
+      const ramp = new THREE.Mesh(new THREE.BoxGeometry(3, 0.25, Math.hypot(6, 3)), sand);
+      ramp.rotation.order = 'YXZ';
+      ramp.rotation.y = Math.atan2(-ux, -uz); // local +Z toward the center
+      ramp.rotation.x = -Math.atan2(3, 6); // rises toward the center
+      ramp.position.set(27 * ux, 1.5 - 0.12, 27 * uz);
+      g.add(ramp);
+    }
+  }
+  for (const pad of map.pads) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.12, 24), mat(P.gold, { emissive: P.gold, emissiveIntensity: 0.6 }));
+    m.position.set(pad.pos[0], pad.pos[1] + 0.06, pad.pos[2]);
+    g.add(m);
+  }
+  return g;
+}
+
+/** Leaves blown by the night-3 wind (warning + gust). */
+export function makeLeaves(n = 80) {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(n * 3);
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x9bbf6a, size: 0.18 }));
+  pts.frustumCulled = false;
+  const update = (center: THREE.Vector3, dir: number, on: boolean, dt: number) => {
+    pts.visible = on;
+    if (!on) return;
+    const [dx, dz] = [Math.cos((dir * Math.PI) / 180), Math.sin((dir * Math.PI) / 180)];
+    for (let i = 0; i < n; i++) {
+      let x = pos[i * 3] + dx * 8 * dt, z = pos[i * 3 + 2] + dz * 8 * dt;
+      if (Math.hypot(x - center.x, z - center.z) > 14 || pos[i * 3 + 1] === 0) {
+        x = center.x + (Math.random() - 0.5) * 24; // render-only randomness
+        z = center.z + (Math.random() - 0.5) * 24;
+        pos[i * 3 + 1] = center.y + 0.3 + Math.random() * 3;
+      }
+      pos[i * 3] = x;
+      pos[i * 3 + 2] = z;
+    }
+    geo.attributes.position.needsUpdate = true;
+  };
+  return { object: pts, update };
 }
 
 let _glow: THREE.Texture | undefined;
@@ -129,9 +237,9 @@ function glowTexture() {
   c.width = c.height = 64;
   const ctx = c.getContext('2d')!;
   const gr = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  gr.addColorStop(0, 'rgba(255,255,255,1)');
-  gr.addColorStop(0.3, 'rgba(255,230,150,0.6)');
-  gr.addColorStop(1, 'rgba(255,200,100,0)');
+  gr.addColorStop(0, '#fff6c2'); // core
+  gr.addColorStop(0.3, 'rgba(255,229,138,0.7)'); // halo #FFE58A
+  gr.addColorStop(1, 'rgba(255,229,138,0)');
   ctx.fillStyle = gr;
   ctx.fillRect(0, 0, 64, 64);
   return (_glow = new THREE.CanvasTexture(c));

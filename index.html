@@ -6,14 +6,61 @@
     <title>Đảo Đèn Lồng</title>
     <link rel="icon" href="data:," />
     <style>
-      html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0a14; color: #ffe9c4; font-family: system-ui, sans-serif; }
-      #hud { position: fixed; top: 12px; left: 12px; font-size: 15px; line-height: 1.5; text-shadow: 0 1px 3px #000; pointer-events: none; }
-      #msg { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; font-size: 28px; background: #0d0a14b0; }
+      /* Ticket-02 palette: UI text #F5F1E6, danger #FF5A5F, gold/score #F2C14E, night #0E1430 */
+      :root { --text: #f5f1e6; --danger: #ff5a5f; --gold: #f2c14e; --night: #0e1430; --amber: #ffb347; }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: var(--night); color: var(--text); font-family: system-ui, sans-serif; }
+      #hud { position: fixed; inset: 0; pointer-events: none; text-shadow: 0 1px 3px #000; }
+      #hud[hidden], #overlay[hidden] { display: none; }
+      #flames { position: absolute; top: 14px; left: 16px; font-size: 26px; letter-spacing: 4px; }
+      #flames .off { opacity: 0.25; filter: grayscale(1); }
+      #clock { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-size: 30px; font-variant-numeric: tabular-nums; font-weight: 600; }
+      #clock.danger { color: var(--danger); animation: blink 1s steps(2, start) infinite; }
+      @keyframes blink { to { visibility: hidden; } }
+      #right { position: absolute; top: 14px; right: 16px; text-align: right; font-size: 18px; line-height: 1.5; }
+      #score { color: var(--gold); font-weight: 600; }
+      #bar { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
+      #bar i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ffe58a80; background: #0006; }
+      #bar i.on { background: radial-gradient(#fff6c2, #ffe58a 60%, #ffb347); box-shadow: 0 0 8px #ffe58a; }
+      #cds { position: absolute; bottom: 14px; right: 16px; display: flex; gap: 10px; }
+      .cd { position: relative; width: 52px; height: 52px; border-radius: 10px; background: #0e1430c0; border: 2px solid var(--gold); display: grid; place-items: center; font-size: 13px; overflow: hidden; }
+      .cd b { position: absolute; left: 0; right: 0; bottom: 0; background: #000a; }
+      .cd span { position: relative; text-align: center; line-height: 1.1; }
+      .cd.charmed { border-color: #c8102e; box-shadow: 0 0 10px #c8102e; }
+      #prompt { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); font-size: 18px; padding: 4px 12px; border-radius: 8px; background: #0e1430c0; }
+      #prompt:empty { display: none; }
+      #arrow { position: absolute; width: 0; height: 0; font-size: 34px; color: var(--amber); }
+      #arrow span { position: absolute; transform: translate(-50%, -50%); display: block; }
+      #wind { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); font-size: 18px; color: #c9e6a8; }
+      #wind:empty { display: none; }
+      #help { position: absolute; top: 56px; left: 16px; font-size: 13px; opacity: 0.7; }
+      #overlay { position: fixed; inset: 0; display: grid; place-items: center; background: #0e1430c8; }
+      .panel { max-width: 560px; padding: 28px 36px; border-radius: 16px; background: #1b2350e8; border: 2px solid var(--gold); text-align: center; }
+      .panel h1 { font-size: 44px; margin: 0 0 6px; color: var(--amber); }
+      .panel h2 { margin: 0 0 10px; color: var(--amber); }
+      .panel p { line-height: 1.6; }
+      .panel .dang { font-style: italic; }
+      .panel button { display: block; width: 100%; margin: 10px 0 0; padding: 10px; font-size: 18px; border-radius: 10px; border: 2px solid var(--gold); background: #0e1430; color: var(--text); cursor: pointer; }
+      .panel button:hover, .panel button:focus-visible { background: #2a2f5c; outline: none; }
+      .panel label { display: grid; grid-template-columns: 140px 1fr 48px; align-items: center; gap: 10px; margin: 12px 0; text-align: left; }
+      .big { font-size: 34px; color: var(--gold); font-weight: 700; }
     </style>
   </head>
   <body>
-    <div id="hud"></div>
-    <div id="msg"></div>
+    <div id="hud" hidden>
+      <div id="flames"></div>
+      <div id="help">WASD đi · Space nhảy · Shift lướt · E nạp · F tỏa sáng · Esc/P tạm dừng · kéo chuột xoay</div>
+      <div id="clock"></div>
+      <div id="right"><div id="lanterns"></div><div id="score"></div></div>
+      <div id="wind"></div>
+      <div id="prompt"></div>
+      <div id="bar"></div>
+      <div id="cds">
+        <div class="cd" id="cd-dash"><b></b><span>Lướt<br />Shift</span></div>
+        <div class="cd" id="cd-pulse"><b></b><span>Tỏa<br />F</span></div>
+      </div>
+      <div id="arrow"><span>➤</span></div>
+    </div>
+    <div id="overlay"><div class="panel" id="panel"></div></div>
     <script type="module" src="/src/render/main.ts"></script>
   </body>
 </html>
