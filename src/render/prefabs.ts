@@ -168,7 +168,7 @@ export function makeBigLantern() {
     tassel.position.z = Math.cos(a) * 0.2;
   }
   const core = add(new THREE.SphereGeometry(0.16, 10, 8), new THREE.MeshBasicMaterial({ color: P.lanternCore }), 2.04);
-  const roof = add(new THREE.ConeGeometry(0.55, 0.3, 6), mat(0x7a2e1e), 2.58);
+  add(new THREE.ConeGeometry(0.55, 0.3, 6), mat(0x7a2e1e), 2.58);
   add(new THREE.SphereGeometry(0.06, 8, 6), gold, 2.76); // chóp
   // Soft halo (additive sprite): reads as glow through the fog.
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: P.lanternLit, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
