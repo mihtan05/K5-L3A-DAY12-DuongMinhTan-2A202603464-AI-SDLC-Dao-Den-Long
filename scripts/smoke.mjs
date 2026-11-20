@@ -1,5 +1,5 @@
 // Browser smoke check + screenshots + FPS for proof. Needs `npm run build` first.
-// Usage: node scripts/smoke.mjs [phase-N]   (uses installed Edge/Chrome; BROWSER_CHANNEL to override, GL=swiftshader for software GL)
+// Usage: node scripts/smoke.mjs [phase-N]   (uses installed Edge/Chrome; BROWSER_CHANNEL or CHROME_PATH to override, GL=swiftshader for software GL)
 // Serves dist/ with the real game server (scripts/server.mjs) and a throw-away leaderboard file.
 import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
@@ -14,7 +14,8 @@ const { startServer } = await import('./server.mjs');
 const server = await startServer(4173);
 const channel = process.env.BROWSER_CHANNEL ?? (process.platform === 'win32' ? 'msedge' : undefined);
 const args = process.env.GL === 'swiftshader' ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] : ['--enable-gpu', '--ignore-gpu-blocklist'];
-const browser = await chromium.launch({ channel, args });
+// CHROME_PATH: use a specific Chromium binary (e.g. a cloud container with a pre-installed browser).
+const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH, args } : { channel, args });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
@@ -152,10 +153,25 @@ try {
   const out = await ev(() => window.__game().lanterns[0]);
   check('lantern runs out of fuel -> off, deposited 0, ever_lit', !out.lit && out.everLit && out.deposited === 0, out);
   await shot('05e-lantern-out-torn');
-  await ev(() => { const g = window.__game(); g.player.pos = [0, 0, 0]; });
+  // Objective arrow (render-only UX, src/render/objective.ts): firefly when empty-handed, weak lantern first when carrying.
+  // Replaces the old "always nearest unlit lantern" check: an empty-handed player is now pointed at a firefly instead.
+  const goal = () => ev(() => { const a = document.querySelector('#arrow'); return { shown: !a.hidden, kind: a.dataset.kind, label: document.querySelector('#arrow-label').textContent }; });
+  await ev(() => { const g = window.__game(); g.player.pos = [0, 0, 0]; g.player.carried = 2; g.lanterns.forEach((l) => Object.assign(l, { lit: false, fuel: 0 })); });
   await page.waitForTimeout(150);
-  const arrow = await ev(() => !document.querySelector('#arrow').hidden);
-  check('arrow to nearest unlit lantern when off-screen', arrow);
+  const a1 = await goal();
+  check('arrow to nearest unlit lantern when off-screen (carrying)', a1.shown && a1.kind === 'light' && /🏮 \d+ m/.test(a1.label), a1);
+  await ev(() => { const g = window.__game(); Object.assign(g.lanterns.at(-1), { lit: true, fuel: 1700, everLit: true }); });
+  await page.waitForTimeout(150);
+  const a2 = await goal();
+  check('arrow prefers a lantern about to go out (carrying)', a2.kind === 'refuel' && a2.label.startsWith('⚠'), a2);
+  await shot('05f-objective-refuel');
+  await ev(() => { const g = window.__game(); g.player.carried = 0; g.motes.length = 0; g.motes.push({ id: 'smoke-m', pos: [0, 0, -30], kind: 'random', ttl: 0 }); });
+  await page.waitForTimeout(150);
+  const a3 = await goal();
+  check('arrow points at a firefly when empty-handed', a3.shown && a3.kind === 'mote' && /✨ 30 m/.test(a3.label), a3);
+  const fArrow = await minFont();
+  check('objective label text >= 18 px', fArrow.min >= 18, fArrow);
+  await ev(() => { const g = window.__game(); g.player.carried = 2; g.lanterns.forEach((l) => Object.assign(l, { lit: false, fuel: 0 })); });
   await ev(() => { const g = window.__game(); g.startTimeLeft = g.simTick / 60 + 25; });
   await page.waitForTimeout(200);
   const danger = await ev(() => document.querySelector('#clock').classList.contains('danger') && getComputedStyle(document.querySelector('#clock')).color);

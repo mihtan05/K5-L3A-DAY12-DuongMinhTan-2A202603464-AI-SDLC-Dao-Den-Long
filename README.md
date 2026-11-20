@@ -129,6 +129,7 @@ npm run build && npm run smoke -- phase-4    # kiểm tra trong trình duyệt t
 - **Mây đội nón lá**, mặc áo bà ba, quàng khăn hổ phách, cầm đèn lồng giấy. Đèn tay sáng dần theo số đom đóm đang mang.
 - **Âm thanh tự tổng hợp** bằng Web Audio theo gam ngũ cung. Nhặt đom đóm liên tiếp thì nốt nhạc lên cao dần.
 - **Đảo sáng dần**: ánh sáng môi trường tăng theo số đèn đang sáng.
+- **Mũi tên mục tiêu** (sau v1.0.0): tay không thì chỉ tới đom đóm, đang cầm thì ưu tiên đèn sắp cạn dầu, kèm khoảng cách. Dùng cả biểu tượng lẫn màu nên vẫn rõ ở bảng màu dễ phân biệt.
 - **Lời Ông Đăng** cho từng Đêm, lá bay báo trước cơn gió, nhạc nền đêm tự tổng hợp.
 
 Tất cả nằm ở phần hiển thị (`src/render/`), headless không dùng tới chúng. `npm run verify` vẫn PASS, xem [docs/proof/phase-4/verify-summary.txt](docs/proof/phase-4/verify-summary.txt).

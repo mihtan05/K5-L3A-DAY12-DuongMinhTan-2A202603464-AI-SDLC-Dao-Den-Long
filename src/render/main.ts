@@ -9,6 +9,7 @@ import { playSfx, setVolume, startMusic, stopMusic } from './audio';
 import { BENCH_CAM, frameStats, orbit } from './bench';
 import { addEntry, cleanName, isoLocal, loadBoard, type Entry } from '../leaderboard';
 import { ambientIntensity, P, P_CB } from './palette';
+import { objective, type ObjectiveKind } from './objective';
 import { makeBigLantern, makeCharm, makeDrifter, makeLeaves, makeMay, makeMote, makeShade, makeWorld } from './prefabs';
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -528,19 +529,26 @@ function draw(dt: number, t: number) {
   cd('cd-dash', p.charm > 0 ? 0 : p.dashCd, T.dash_cooldown_s * TPS);
   $('cd-dash').classList.toggle('charmed', p.charm > 0);
   cd('cd-pulse', p.pulseCd, T.pulse_cooldown_s * TPS);
-  const unlit = g.lanterns.filter((l) => !l.lit);
   const dist = (l: { pos: number[] }) => Math.hypot(l.pos[0] - p.pos[0], l.pos[2] - p.pos[2]);
   const near = g.lanterns.filter((l) => dist(l) <= T.interact_radius && (!l.lit || l.fuel < FUEL_MAX)).sort((a, b) => dist(a) - dist(b))[0];
   setText('prompt', !near ? '' : near.lit
     ? `${K('interact')} — Châm dầu (${Math.floor(near.fuel / TPS)}/100)`
     : `${K('interact')} — Nạp ánh sáng (${near.deposited}/${lightCost(near)})`);
   setText('wind', g.wind.active ? '🍃 Gió đang thổi!' : g.wind.warn ? '🍃 Gió sắp nổi…' : '');
-  const target = unlit.sort((a, b) => dist(a) - dist(b))[0];
-  edgeArrow($('arrow'), target ? [target.pos[0], target.pos[1] + 2, target.pos[2]] : null);
+  // Objective arrow: firefly when empty-handed, else a lantern about to go out, else an unlit one (objective.ts).
+  const goal = objective(g);
+  const arrow = $('arrow');
+  edgeArrow(arrow, goal ? [goal.pos[0], goal.pos[1] + (goal.kind === 'mote' ? 0.5 : 2), goal.pos[2]] : null);
+  if (goal && !arrow.hidden) {
+    if (arrow.dataset.kind !== goal.kind) arrow.dataset.kind = goal.kind;
+    setText('arrow-label', `${GOAL_ICON[goal.kind]} ${Math.round(goal.dist)} m`);
+  }
   // New shade: arrow at the screen edge towards it for 3.5 s while it is off-screen
   const cue = shadeCue && performance.now() < shadeCue.until && settings.captions ? g.shades.find((s) => s.id === shadeCue!.id) : undefined;
   edgeArrow($('sarrow'), cue ? cue.pos : null);
 }
+/** Shape + text as well as color, so the cue survives colorblind mode. */
+const GOAL_ICON: Record<ObjectiveKind, string> = { mote: '✨', refuel: '⚠ 🏮', light: '🏮' };
 /** Shows el at the screen edge pointing at pos when pos is off-screen; hides it otherwise. */
 function edgeArrow(el: HTMLElement, pos: readonly number[] | null) {
   el.hidden = true;

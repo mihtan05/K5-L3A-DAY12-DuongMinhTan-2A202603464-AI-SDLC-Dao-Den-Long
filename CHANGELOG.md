@@ -1,5 +1,14 @@
 # Changelog
 
+## [Sau v1.0.0] — cải tiến trải nghiệm (chỉ phần hiển thị, đầu ra headless không đổi)
+
+Làm trên nhánh `claude/lab-mobile-phone-da8788-jhs7f1`, không thuộc tag `phase-4` / Release `v1.0.0`.
+
+| Thay đổi | Lý do | Test |
+|---|---|---|
+| Mũi tên mục tiêu: tay không → đom đóm gần nhất (✨); đang cầm → đèn sắp cạn dầu (⚠ 🏮, đỏ) rồi mới tới đèn chưa thắp (🏮). Kèm khoảng cách "N m". | Trước đây mũi tên chỉ trỏ đèn chưa thắp, kể cả khi tay không hoặc khi một đèn đang sắp tắt (Ticket-03). | `tests/objective.test.ts`; smoke: kiểm tra cũ "arrow to nearest unlit lantern" được thay bằng 3 kiểm tra (vì tay không giờ trỏ đom đóm) |
+| `scripts/smoke.mjs` nhận `CHROME_PATH` | Chạy được smoke trong container cloud có sẵn Chromium | — |
+
 ## [Phase 4] — Ticket-04 "Bình minh: phát hành v1.0.0", Test Contract v1.3 · Release v1.0.0
 
 Ticket: [docs/lab/TICKET-04.md](docs/lab/TICKET-04.md) · Bằng chứng: [docs/proof/phase-4](docs/proof/phase-4/README.md)
