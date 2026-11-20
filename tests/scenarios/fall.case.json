@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","200","--snapshot-every","10","--scenario","tests/scenarios/fall.scenario.json","--inputs","tests/scenarios/fall.inputs.json"],"expect":{"events":{"player_hit":1},"last":{"player":{"pos":[0,0,0],"flames":2,"carried":0,"invuln":true}}}}

@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","1300","--snapshot-every","100","--scenario","tests/scenarios/shade-schedule.scenario.json"],"expect":{"events":{"shade_spawned":4}}}

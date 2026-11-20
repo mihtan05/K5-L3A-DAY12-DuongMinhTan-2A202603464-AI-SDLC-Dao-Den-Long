@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","2","--ticks","200","--snapshot-every","10","--scenario","tests/scenarios/charm.scenario.json","--inputs","tests/scenarios/charm.inputs.json"],"expect":{"events":{"charm_picked":1,"dash":2,"player_hit":0},"last":{"player":{"grounded":true},"charms":[{"id":"C1","available":false}]}}}

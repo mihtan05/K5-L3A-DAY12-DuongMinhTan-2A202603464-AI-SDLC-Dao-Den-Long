@@ -1,1 +1,1 @@
-{"args":["--seed","1","--night","1","--ticks","1000","--snapshot-every","60","--scenario","tests/scenarios/hit-lose.scenario.json"]}
+{"args":["--seed","1","--night","1","--ticks","1000","--snapshot-every","60","--scenario","tests/scenarios/hit-lose.scenario.json"],"expect":{"end":{"state":"lost"}}}

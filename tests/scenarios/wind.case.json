@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","3","--ticks","2160","--snapshot-every","60","--scenario","tests/scenarios/wind.scenario.json"],"expect":{"last":{"wind":{"active":false,"dir_deg":225},"player":{"pos":[-7.071,0,-32.071]}}}}

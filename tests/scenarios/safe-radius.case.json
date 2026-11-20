@@ -1,1 +1,1 @@
-{"args":["--seed","1","--night","1","--ticks","300","--snapshot-every","60","--scenario","tests/scenarios/safe-radius.scenario.json"]}
+{"args":["--seed","1","--night","1","--ticks","300","--snapshot-every","60","--scenario","tests/scenarios/safe-radius.scenario.json"],"expect":{"events":{"player_hit":0}}}

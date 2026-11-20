@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","2","--ticks","2400","--snapshot-every","600","--scenario","tests/scenarios/drifter-spawn.scenario.json"],"expect":{"last":{"drifters":[{"id":"D1","state":"idle"},{"id":"D2","state":"idle"}]}}}

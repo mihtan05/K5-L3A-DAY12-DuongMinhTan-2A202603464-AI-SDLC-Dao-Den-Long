@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","60","--snapshot-every","5","--scenario","tests/scenarios/pause.scenario.json","--inputs","tests/scenarios/pause.inputs.json"],"expect":{"events":{"paused":1,"resumed":1},"end":{"ticks":60},"last":{"sim_tick":40,"state":"playing"}}}

@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","120","--snapshot-every","6","--scenario","tests/scenarios/dash.scenario.json","--inputs","tests/scenarios/dash.inputs.json"],"expect":{"events":{"dash":2},"last":{"player":{"dash_cd_s":1.017}}}}

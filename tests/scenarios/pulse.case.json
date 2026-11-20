@@ -1,1 +1,1 @@
-{"args":["--seed","1","--night","1","--ticks","240","--snapshot-every","30","--scenario","tests/scenarios/pulse.scenario.json","--inputs","tests/scenarios/pulse.inputs.json"]}
+{"args":["--seed","1","--night","1","--ticks","240","--snapshot-every","30","--scenario","tests/scenarios/pulse.scenario.json","--inputs","tests/scenarios/pulse.inputs.json"],"expect":{"events":{"pulse":1}}}

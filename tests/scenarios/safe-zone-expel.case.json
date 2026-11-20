@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","60","--snapshot-every","5","--scenario","tests/scenarios/safe-zone-expel.scenario.json","--inputs","tests/scenarios/safe-zone-expel.inputs.json"],"expect":{"events":{"lantern_lit":1,"player_hit":0},"last":{"shades":[{"id":"IN","pos":[0,1,19]}]}}}

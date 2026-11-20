@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","2","--ticks","150","--snapshot-every","10","--scenario","tests/scenarios/drifter-drop.scenario.json","--inputs","tests/scenarios/drifter-drop.inputs.json"],"expect":{"events":{"drifter_drop":1,"pulse":1},"last":{"drifters":[{"id":"D1","state":"removed","stolen":0}]}}}

@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","2","--ticks","400","--snapshot-every","20","--scenario","tests/scenarios/drifter-steal.scenario.json"],"expect":{"events":{"drifter_steal":1,"player_hit":0},"last":{"player":{"carried":3,"flames":3},"drifters":[{"id":"D1","state":"removed","stolen":3}]}}}

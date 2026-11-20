@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","3","--ticks","90","--snapshot-every","6","--scenario","tests/scenarios/night3-pad.scenario.json"],"expect":{"last":{"player":{"grounded":true,"pos":[0,6,6.2]}}}}

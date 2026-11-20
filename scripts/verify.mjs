@@ -2,6 +2,8 @@
 // Usage: npm run verify -- [phase-N]     (proof goes to docs/proof/<phase>/, default "latest")
 // Scenario case file: tests/scenarios/<name>.case.json = { "args": ["--seed","1","--night","1","--ticks","600", ...] }
 // Paths inside args are relative to the repo root. "--out" is added by this script.
+// Optional "expect": { "events": {name: count}, "end": {...}, "last": {...} } checked against the output
+// ("end" = end line, "last" = last snapshot; partial deep match).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -23,7 +25,7 @@ const cases = existsSync(scenDir) ? readdirSync(scenDir).filter((f) => f.endsWit
 let failed = unit.status !== 0;
 for (const f of cases) {
   const name = f.replace('.case.json', '');
-  const { args, expect_exit = 0 } = JSON.parse(readFileSync(join(scenDir, f), 'utf8'));
+  const { args, expect_exit = 0, expect } = JSON.parse(readFileSync(join(scenDir, f), 'utf8'));
   const outs = [1, 2].map((n) => {
     const out = join(runDir, `${name}.${n}.jsonl`);
     const r = spawnSync('npx', ['tsx', 'src/headless/cli.ts', ...args, '--out', out], { encoding: 'utf8', shell: isWin });
@@ -35,9 +37,27 @@ for (const f of cases) {
     same = readFileSync(outs[0].out, 'utf8') === readFileSync(outs[1].out, 'utf8');
     writeFileSync(join(proofDir, `${name}.jsonl`), readFileSync(outs[0].out));
   }
-  const ok = exitOk && same;
+  const why = expect_exit === 0 && expect ? check(readFileSync(outs[0].out, 'utf8'), expect) : [];
+  const ok = exitOk && same && why.length === 0;
   failed ||= !ok;
-  report.push(`${name}: exit=${outs[0].status} (want ${expect_exit}) deterministic=${same} -> ${ok ? 'PASS' : 'FAIL'}`);
+  report.push(`${name}: exit=${outs[0].status} (want ${expect_exit}) deterministic=${same}${expect ? ` expect=${why.length ? why.join('; ') : 'ok'}` : ''} -> ${ok ? 'PASS' : 'FAIL'}`);
+}
+
+function match(got, want, path, out) {
+  if (want !== null && typeof want === 'object') {
+    for (const k of Object.keys(want)) match(got?.[k], want[k], `${path}.${k}`, out);
+  } else if (got !== want) out.push(`${path}=${JSON.stringify(got)} want ${JSON.stringify(want)}`);
+}
+function check(text, exp) {
+  const lines = text.trim().split(/\r?\n/).map((l) => JSON.parse(l));
+  const out = [];
+  for (const [name, n] of Object.entries(exp.events ?? {})) {
+    const got = lines.filter((l) => l.type === 'event' && l.name === name).length;
+    if (got !== n) out.push(`events.${name}=${got} want ${n}`);
+  }
+  if (exp.end) match(lines.at(-1), exp.end, 'end', out);
+  if (exp.last) match(lines.filter((l) => l.type === 'snapshot').at(-1), exp.last, 'last', out);
+  return out;
 }
 
 let commit = 'unknown';

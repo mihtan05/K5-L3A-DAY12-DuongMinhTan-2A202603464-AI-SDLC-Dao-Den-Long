@@ -1,1 +1,1 @@
-{"args":["--seed","1","--night","1","--ticks","600","--snapshot-every","60","--scenario","tests/scenarios/dawn.scenario.json"]}
+{"args":["--seed","1","--night","1","--ticks","600","--snapshot-every","60","--scenario","tests/scenarios/dawn.scenario.json"],"expect":{"end":{"state":"lost","ticks":120}}}

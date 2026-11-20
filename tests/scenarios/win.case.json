@@ -1,1 +1,1 @@
-{"args":["--seed","1","--night","1","--ticks","60","--scenario","tests/scenarios/win.scenario.json","--inputs","tests/scenarios/interact.inputs.json"]}
+{"args":["--seed","1","--night","1","--ticks","60","--scenario","tests/scenarios/win.scenario.json","--inputs","tests/scenarios/interact.inputs.json"],"expect":{"end":{"state":"won","score":948}}}

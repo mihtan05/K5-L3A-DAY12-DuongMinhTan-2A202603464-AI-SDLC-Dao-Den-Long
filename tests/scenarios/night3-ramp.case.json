@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","3","--ticks","150","--snapshot-every","10","--scenario","tests/scenarios/night3-ramp.scenario.json","--inputs","tests/scenarios/night3-ramp.inputs.json"],"expect":{"last":{"player":{"grounded":true,"pos":[16.454,3,9.5]}}}}
