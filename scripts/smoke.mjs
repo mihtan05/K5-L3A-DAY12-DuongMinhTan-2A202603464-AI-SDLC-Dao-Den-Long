@@ -93,6 +93,16 @@ try {
   await page.waitForSelector('text=Bắt đầu');
   check('rebinding saved between sessions (jump = J)', (await ev(() => window.__ui().settings.keys.jump)) === 'KeyJ');
 
+  // Island select: practice any night directly, no leaderboard entry
+  await click('Chọn đảo');
+  const islandText = await page.textContent('#panel');
+  const islandFont = await minFont();
+  check('island select lists the 3 islands, text >= 18 px', ['Đảo Bến', 'Đảo Cau', 'Đảo Chuông'].every((t) => islandText.includes(t)) && islandFont.min >= 18, islandFont);
+  await page.getByRole('button', { name: /Đảo Chuông/ }).click();
+  check('island select opens that night', /Đêm 3/.test(await page.textContent('#panel')));
+  await page.reload();
+  await page.waitForSelector('text=Bắt đầu');
+
   // Menu -> intro -> play
   await click('Bắt đầu');
   const introText = await page.textContent('#panel');

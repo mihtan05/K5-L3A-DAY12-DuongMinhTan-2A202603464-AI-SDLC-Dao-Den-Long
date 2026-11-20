@@ -143,7 +143,11 @@ overlay.addEventListener('click', (e) => {
   if (!act) return;
   (e.target as HTMLElement).blur();
   const acts: Record<string, () => unknown> = {
-    start: () => ((total = 0), (nightsWon = 0), (runSeed = Math.floor(Math.random() * 2 ** 31)), intro(1)),
+    start: () => newRun(1, false),
+    islands: () => islandMenu(),
+    island1: () => newRun(1, true),
+    island2: () => newRun(2, true),
+    island3: () => newRun(3, true),
     settings: () => openSettings(),
     board: () => showBoard(),
     save: () => saveScore(),
@@ -167,7 +171,24 @@ function mainMenu() {
   stopMusic();
   $('hud').hidden = true;
   show('menu', `<h1>🏮 Đảo Đèn Lồng</h1><p>Ba đêm, ba hòn đảo. Giữ đèn lồng sáng tới bình minh.</p>
-    <button data-act="start">Bắt đầu</button><button data-act="board">Bảng xếp hạng</button><button data-act="settings">Cài đặt</button>`);
+    <button data-act="start">Bắt đầu</button><button data-act="islands">Chọn đảo</button><button data-act="board">Bảng xếp hạng</button><button data-act="settings">Cài đặt</button>`);
+}
+/** A practice run plays one island on its own: no next night and no leaderboard entry (a ranked run starts at Night 1). */
+let practice = false;
+function newRun(n: 1 | 2 | 3, isPractice: boolean) {
+  total = 0;
+  nightsWon = 0;
+  runSeed = Math.floor(Math.random() * 2 ** 31);
+  practice = isPractice;
+  intro(n);
+}
+function islandMenu() {
+  mode = 'menu';
+  const rows = ([1, 2, 3] as const).map((n) => {
+    const m = mapFor(n);
+    return `<button data-act="island${n}">Đêm ${n} — ${m.name} · ${m.lanterns.length} đèn</button>`;
+  }).join('');
+  show('islands', `<h2>Chọn đảo</h2><p>Chơi luyện tập một đảo. Điểm không lưu vào bảng xếp hạng.</p>${rows}<button data-act="menu">Về menu</button>`);
 }
 function intro(n: 1 | 2 | 3) {
   mode = 'intro';
@@ -183,7 +204,9 @@ function result(won: boolean, reason: string) {
   stopMusic();
   if (won) (total += game.score), nightsWon++;
   const msg = won ? '🌅 Đảo còn sáng tới bình minh!' : reason === 'dawn' ? `Trời đã sáng… cần ít nhất ${winNeed(game)} đèn còn sáng` : 'Mây đã hết lửa…';
-  const btn = won
+  const btn = practice
+    ? `${won ? '' : '<button data-act="retry">Chơi lại Đêm</button>'}<button data-act="islands">Chọn đảo</button><button data-act="menu">Về menu</button>`
+    : won
     ? night === 3 ? '<button data-act="dawn">Đón bình minh</button>' : '<button data-act="next">Đêm kế tiếp</button>'
     : `${saveForm()}<button data-act="retry">Chơi lại Đêm</button><button data-act="menu">Về menu</button>`;
   show('result', `<h2>Đêm ${night} — ${won ? 'Thắng' : 'Thua'}</h2><p>${msg}</p>

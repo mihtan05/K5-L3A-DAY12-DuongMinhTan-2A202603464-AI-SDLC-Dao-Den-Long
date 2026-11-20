@@ -103,3 +103,4 @@ Ticket-03 thay một số giả định trước: A10 (thưởng thời gian khi
 | D13 | Phụ đề / chỉ báo | Bật mặc định và tắt được trong Cài đặt. Mũi tên Bóng Mực chỉ hiện 3.5 s sau khi nó xuất hiện và chỉ khi nó nằm ngoài màn hình. Thêm phụ đề "Đèn Lx đã tắt". |
 | D14 | Giảm chuyển động | Trước Phase 4 game chưa có rung camera hay chớp màn hình. Phase 4 thêm cả hai (khi bị đánh: rung + chớp đỏ; khi tỏa sáng: chớp vàng nhẹ) và tùy chọn tắt chúng. Giá trị mặc định theo `prefers-reduced-motion` của hệ điều hành. |
 | D15 | Cảnh bench và phần sáng tạo | Cảnh bench không có thực thể sáng tạo nào khác ngoài các prefab chuẩn. HUD vẫn hiện như lúc chơi. Nhạc nền tắt vì cảnh không có input. Để chịu được 200 Bóng Mực, mesh "thở" của Bóng Mực được dùng chung và chỉ biến dạng một lần mỗi khung; chỉ phần hiển thị thay đổi. |
+| D16 | Chọn đảo (sau v1.0.0) | Chơi luyện tập một Đêm bất kỳ. Không sang Đêm kế và không lưu bảng xếp hạng, vì điểm xếp hạng là tổng một lượt chơi từ Đêm 1. |

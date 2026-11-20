@@ -130,5 +130,6 @@ npm run build && npm run smoke -- phase-4    # kiểm tra trong trình duyệt t
 - **Âm thanh tự tổng hợp** bằng Web Audio theo gam ngũ cung. Nhặt đom đóm liên tiếp thì nốt nhạc lên cao dần.
 - **Đảo sáng dần**: ánh sáng môi trường tăng theo số đèn đang sáng.
 - **Lời Ông Đăng** cho từng Đêm, lá bay báo trước cơn gió, nhạc nền đêm tự tổng hợp.
+- **Sau v1.0.0**: Mây có dáng người, chân tay bước theo tốc độ; cột đèn bệ đá, đèn lồng có nan và tua rua; mỗi đảo có cây riêng (Đảo Cau có cây cau), đá, cỏ, hoa, vách đá và viền sáng để thấy rõ từng đảo; menu **Chọn đảo** để chơi luyện tập một Đêm (không lưu bảng xếp hạng).
 
 Tất cả nằm ở phần hiển thị (`src/render/`), headless không dùng tới chúng. `npm run verify` vẫn PASS, xem [docs/proof/phase-4/verify-summary.txt](docs/proof/phase-4/verify-summary.txt).
