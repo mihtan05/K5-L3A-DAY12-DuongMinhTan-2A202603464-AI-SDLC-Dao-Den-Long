@@ -1,0 +1,134 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "name": "main menu",
+   "ok": true
+  },
+  {
+   "name": "settings saved between sessions",
+   "ok": true,
+   "info": {
+    "volume": 0.3,
+    "sens": 1.8
+   }
+  },
+  {
+   "name": "night intro shows island name and Ông Đăng",
+   "ok": true
+  },
+  {
+   "name": "move with W",
+   "ok": true,
+   "info": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     7.2
+    ]
+   ]
+  },
+  {
+   "name": "jump",
+   "ok": true,
+   "info": [
+    0,
+    0.83,
+    7.2
+   ]
+  },
+  {
+   "name": "dash (Shift) starts cooldown",
+   "ok": true,
+   "info": 84
+  },
+  {
+   "name": "dash moves ~2.8 m extra",
+   "ok": true
+  },
+  {
+   "name": "HUD: flames, mm:ss clock, k/n lanterns, score, 10 cells, 2 cooldowns",
+   "ok": true,
+   "info": {
+    "flames": 3,
+    "clock": "04:57",
+    "lanterns": "🏮 Đèn 0/5",
+    "score": "⭐ 0",
+    "cells": 10,
+    "cds": 2
+   }
+  },
+  {
+   "name": "prompt \"E — Nạp ánh sáng (x/10)\" near a lantern",
+   "ok": true,
+   "info": "E — Nạp ánh sáng (0/10)"
+  },
+  {
+   "name": "arrow to nearest unlit lantern when off-screen",
+   "ok": true
+  },
+  {
+   "name": "clock red + blinking at <= 30 s",
+   "ok": true,
+   "info": "rgb(255, 90, 95)"
+  },
+  {
+   "name": "Esc pauses: sim frozen, menu has 4 options",
+   "ok": true,
+   "info": [
+    228,
+    228,
+    247,
+    278
+   ]
+  },
+  {
+   "name": "resume",
+   "ok": true
+  },
+  {
+   "name": "FPS >= 30 at 1280x720",
+   "ok": true,
+   "info": "117.5"
+  },
+  {
+   "name": "lose shows \"Chơi lại Đêm\"",
+   "ok": true
+  },
+  {
+   "name": "retry returns to the same night intro",
+   "ok": true
+  },
+  {
+   "name": "night 2 intro",
+   "ok": true
+  },
+  {
+   "name": "night 3 intro",
+   "ok": true
+  },
+  {
+   "name": "Dawn screen with total = sum of won nights",
+   "ok": true,
+   "info": {
+    "scores": [
+     948,
+     1008,
+     1068
+    ],
+    "total": 3024
+   }
+  },
+  {
+   "name": "no console errors",
+   "ok": true,
+   "info": []
+  }
+ ],
+ "errors": []
+}
