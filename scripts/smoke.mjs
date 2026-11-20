@@ -192,7 +192,7 @@ try {
   // Hit: camera shake + red flash; with "Giảm chuyển động" neither
   const hit = () => ev(() => { const g = window.__game(); g.player.invuln = 0; g.player.flames = 3; g.shades.push({ id: 'H' + g.tick, pos: [...g.player.pos], state: 'wander', push: 0, pushDir: [1, 0], expel: 0, expelFrom: [0, 0], target: null, lantern: null, drainT: 0, ticks: 0 }); });
   await hit();
-  await page.waitForTimeout(60);
+  await page.waitForFunction(() => window.__game().player.flames < 3, null, { timeout: 3000 }); // the hit has happened
   const fx = await ev(() => ({ flash: document.querySelector('#flash').classList.contains('go') && getComputedStyle(document.querySelector('#flash')).display !== 'none', shake: window.__ui().shake }));
   check('hit: camera shake and screen flash', fx.flash && fx.shake > 0, fx);
   await page.keyboard.press('Escape');
@@ -204,7 +204,7 @@ try {
   await ev(() => { document.querySelector('#flash').classList.remove('go'); window.__game().shades.length = 0; });
   await page.waitForTimeout(500);
   await hit();
-  await page.waitForTimeout(60);
+  await page.waitForFunction(() => window.__game().player.flames < 3, null, { timeout: 3000 }); // the hit has happened
   const fx2 = await ev(() => ({ flashShown: getComputedStyle(document.querySelector('#flash')).display !== 'none', shake: window.__ui().shake, hits: 3 - window.__game().player.flames }));
   check('reduced motion: no camera shake, no flash', !fx2.flashShown && fx2.shake === 0 && fx2.hits === 1, fx2);
   // Large text x1.25
