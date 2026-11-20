@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","60","--snapshot-every","10","--scenario","tests/scenarios/capacity.scenario.json"],"expect":{"events":{"mote_picked":1},"last":{"player":{"carried":12,"capacity":12}}}}

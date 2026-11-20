@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","120","--snapshot-every","10","--scenario","tests/scenarios/dawn-win.scenario.json"],"expect":{"events":{"game_over":1},"end":{"state":"won","ticks":60,"score":597}}}

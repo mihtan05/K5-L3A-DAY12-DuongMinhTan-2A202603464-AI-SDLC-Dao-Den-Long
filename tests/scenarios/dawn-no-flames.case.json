@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","10","--snapshot-every","1","--scenario","tests/scenarios/dawn-no-flames.scenario.json"],"expect":{"events":{"player_hit":1,"game_over":1},"end":{"state":"lost","ticks":1}}}

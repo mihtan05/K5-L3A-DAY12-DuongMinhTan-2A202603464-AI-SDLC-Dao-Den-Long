@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","10","--snapshot-every","1","--scenario","tests/scenarios/drain-pulse.scenario.json","--inputs","tests/scenarios/drain-pulse.inputs.json"],"expect":{"events":{"pulse":1},"end":{"score":15}}}

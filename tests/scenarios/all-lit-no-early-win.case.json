@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","60","--snapshot-every","10","--scenario","tests/scenarios/all-lit-no-early-win.scenario.json","--inputs","tests/scenarios/all-lit-no-early-win.inputs.json"],"expect":{"events":{"lantern_lit":1,"game_over":0},"end":{"state":"playing","score":150}}}

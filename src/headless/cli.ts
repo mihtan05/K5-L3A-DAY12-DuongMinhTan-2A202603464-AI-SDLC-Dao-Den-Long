@@ -1,7 +1,7 @@
-// Headless runner (Test Contract v1.1). Exit 0 ok, 1 usage error, 2 malformed inputs/scenario file.
+// Headless runner (Test Contract v1.2). Exit 0 ok, 1 usage error, 2 malformed inputs/scenario file.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { createGame, IDLE, step, timeLeft, TPS, type Game, type Input, type Scenario, type Vec3 } from '../core/sim';
+import { capacity, createGame, fuelOut, IDLE, step, timeLeft, TPS, type Game, type Input, type Scenario, type Vec3 } from '../core/sim';
 import { FormatError, parseArgs, parseInputs, parseScenario, UsageError, type Frame } from './parse';
 
 const r3 = (x: number) => Math.round(x * 1000) / 1000 + 0; // +0 turns -0 into 0
@@ -25,12 +25,15 @@ export function snapshot(g: Game) {
       grounded: p.grounded,
       flames: p.flames,
       carried: p.carried,
+      capacity: capacity(p),
       invuln: p.invuln > 0,
       dash_cd_s: sec(p.dashCd),
       pulse_cd_s: sec(p.pulseCd),
       charm_s: sec(p.charm),
     },
-    lanterns: g.lanterns.map((l) => ({ id: l.id, pos: v3(l.pos), lit: l.lit, deposited: l.deposited })),
+    lanterns: g.lanterns.map((l) => ({
+      id: l.id, pos: v3(l.pos), lit: l.lit, deposited: l.deposited, fuel: fuelOut(l.fuel), ever_lit: l.everLit, relit_count: l.relitCount,
+    })),
     shades: g.shades.map((s) => ({ id: s.id, pos: v3(s.pos), state: s.state })),
     drifters: g.drifters.map((d) => ({ id: d.id, pos: v3(d.pos), state: d.state, stolen: d.stolen })),
     charms: g.charms.map((c) => ({ id: c.id, pos: v3(c.pos), available: c.available, respawn_s: sec(c.respawn) })),

@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","700","--snapshot-every","20","--scenario","tests/scenarios/drain.scenario.json"],"expect":{"events":{"lantern_out":1},"last":{"lanterns":[{"id":"L1","lit":false}],"shades":[{"id":"S1","state":"wander"}]}}}

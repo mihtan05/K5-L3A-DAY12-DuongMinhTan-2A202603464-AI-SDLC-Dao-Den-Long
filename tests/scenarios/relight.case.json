@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","20","--snapshot-every","5","--scenario","tests/scenarios/relight.scenario.json","--inputs","tests/scenarios/relight.inputs.json"],"expect":{"events":{"lantern_out":1,"lantern_lit":1},"end":{"score":65},"last":{"player":{"capacity":12},"lanterns":[{"id":"L1","lit":true,"relit_count":1}]}}}

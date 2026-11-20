@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","40","--snapshot-every","5","--scenario","tests/scenarios/fuel-out.scenario.json"],"expect":{"events":{"lantern_out":1},"last":{"lanterns":[{"id":"L1","lit":false,"fuel":0,"deposited":0,"ever_lit":true}]}}}

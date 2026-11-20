@@ -115,12 +115,18 @@ export function parseScenario(text: string, night = 1): Scenario {
     if (!isObj(p)) throw new FormatError('scenario.player: expected object');
     const out: NonNullable<Scenario['player']> = {};
     if ('pos' in p) out.pos = vec3(p.pos, 'scenario.player.pos');
-    for (const k of ['carried', 'flames', 'invuln_ticks', 'dash_cd_ticks', 'pulse_cd_ticks', 'charm_ticks'] as const)
+    for (const k of ['carried', 'flames', 'invuln_ticks', 'dash_cd_ticks', 'pulse_cd_ticks', 'charm_ticks', 'successful_lights'] as const)
       if (k in p) out[k] = uint(p, k, 'scenario.player');
     sc.player = out;
   }
   for (const k of ['random_motes', 'random_shades', 'random_drifters', 'wind_enabled'] as const) if (k in d) sc[k] = bool(d, k, 'scenario');
   if ('motes' in d) sc.motes = arr('motes').map((m, i) => vec3(m, `scenario.motes[${i}]`));
+  const nLanterns = mapFor(night).lanterns.length;
+  const lanternId = (x: unknown, w: string) => {
+    const k = typeof x === 'string' ? /^L(\d+)$/.exec(x) : null;
+    if (!k || +k[1] < 1 || +k[1] > nLanterns) throw new FormatError(`${w}: expected L1..L${nLanterns}`);
+    return x as string;
+  };
   if ('shades' in d)
     sc.shades = arr('shades').map((s, i) => {
       const w = `scenario.shades[${i}]`;
@@ -130,6 +136,7 @@ export function parseScenario(text: string, night = 1): Scenario {
         pos: vec3(s.pos, `${w}.pos`),
         ...state(s, w, SHADE_STATES),
         ...('state_ticks_left' in s ? { state_ticks_left: uint(s, 'state_ticks_left', w) } : {}),
+        ...('target_lantern_id' in s ? { target_lantern_id: lanternId(s.target_lantern_id, `${w}.target_lantern_id`) } : {}),
       };
     });
   if ('drifters' in d)
@@ -156,15 +163,18 @@ export function parseScenario(text: string, night = 1): Scenario {
       };
     });
   if ('lanterns' in d) {
-    const n = mapFor(night).lanterns.length;
     sc.lanterns = arr('lanterns').map((l, i) => {
       const w = `scenario.lanterns[${i}]`;
-      const k = isObj(l) && typeof l.id === 'string' ? /^L(\d+)$/.exec(l.id) : null;
-      if (!isObj(l) || !k || +k[1] < 1 || +k[1] > n) throw new FormatError(`${w}.id: expected L1..L${n}`);
-      const out: NonNullable<Scenario['lanterns']>[number] = { id: l.id as string };
+      if (!isObj(l)) throw new FormatError(`${w}: expected object`);
+      const out: NonNullable<Scenario['lanterns']>[number] = { id: lanternId(l.id, `${w}.id`) };
       if ('pos' in l) out.pos = vec3(l.pos, `${w}.pos`);
       if ('lit' in l) out.lit = bool(l, 'lit', w);
       if ('deposited' in l) out.deposited = uint(l, 'deposited', w);
+      if ('ever_lit' in l) out.ever_lit = bool(l, 'ever_lit', w);
+      if ('fuel' in l) {
+        if (!isNum(l.fuel) || l.fuel < 0 || l.fuel > 100) throw new FormatError(`${w}.fuel: expected number in [0, 100]`);
+        out.fuel = l.fuel;
+      }
       return out;
     });
   }

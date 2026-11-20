@@ -17,24 +17,28 @@ const go = (sc: Scenario, frames: Frame[] = [], ticks = 60, every = 1, night: 1 
 const names = (ev: { name: string }[]) => ev.map((e) => e.name);
 const xz = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 
-describe('tick model & output (v1.1)', () => {
+describe('tick model & output (v1.2)', () => {
+  // Phase 3: night 1 lasts 240 s (was 300) — Ticket-03 §3.
   it('snapshot at tick 0 before input, night_start at tick 0, end line last, time_left counts steps', () => {
     const r = go({}, [{ tick: 0, move: [0, 1] }], 30, 10);
     expect(r.lines[1]).toEqual({ type: 'event', tick: 0, name: 'night_start', data: { night: 1 } });
     expect(r.snaps.map((s) => s.tick)).toEqual([0, 10, 20, 30]);
     expect(r.snaps[0].player.pos).toEqual([0, 0, 0]);
-    expect(r.snaps[0].time_left_s).toBe(300);
-    expect(r.snaps[3].time_left_s).toBe(299.5);
+    expect(r.snaps[0].time_left_s).toBe(240);
+    expect(r.snaps[3].time_left_s).toBe(239.5);
     expect(r.snaps[0].lanterns).toHaveLength(5);
     expect(r.end).toEqual({ type: 'end', ticks: 30, state: 'playing', score: 0 });
   });
-  it('snapshot has every v1.1 field', () => {
-    const s = go({ motes: [[0, 0, 5]] }, [], 1, 1, 2).snaps[0];
+  // Phase 3: v1.2 adds player.capacity and lantern fuel / ever_lit / relit_count.
+  it('snapshot has every v1.2 field', () => {
+    const s = go({ motes: [[0, 0, 5]], lanterns: [{ id: 'L2', lit: true }] }, [], 1, 1, 2).snaps[0];
     expect(Object.keys(s)).toEqual(expect.arrayContaining(['night', 'wind', 'drifters', 'charms', 'motes', 'motes_active', 'sim_tick']));
     expect(s.wind).toEqual({ active: false, dir_deg: 0 });
     expect(s.player).toEqual({
-      pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, flames: 3, carried: 0, invuln: false, dash_cd_s: 0, pulse_cd_s: 0, charm_s: 0,
+      pos: [0, 0, 0], vel: [0, 0, 0], grounded: true, flames: 3, carried: 0, capacity: 10, invuln: false, dash_cd_s: 0, pulse_cd_s: 0, charm_s: 0,
     });
+    expect(s.lanterns[0]).toEqual({ id: 'L1', pos: [0, 0, 20], lit: false, deposited: 0, fuel: 0, ever_lit: false, relit_count: 0 });
+    expect(s.lanterns[1]).toMatchObject({ id: 'L2', lit: true, fuel: 100, ever_lit: true, relit_count: 0 });
     expect(s.motes[0]).toEqual({ id: 'M1', pos: [0, 0, 5], kind: 'random', ttl_s: null });
     expect(s.charms).toEqual([{ id: 'C1', pos: [35, 0, 0], available: true, respawn_s: 0 }]);
   });
@@ -50,10 +54,11 @@ describe('tick model & output (v1.1)', () => {
       for (const l of run(3, 4000, 20, {}, [{ tick: 0, move: [0.3, 1] }], n).map((x) => JSON.parse(x)))
         if (l.type === 'snapshot') for (const s of l.shades) expect(SHADE_STATES).toContain(s.state);
   });
-  it('a full night (21 600 ticks) runs in under 30 s', () => {
+  // Phase 3: the longest night is now 300 s = 18 000 ticks; the contract cap (21 600) still holds.
+  it('a full night (<= 21 600 ticks) runs in under 30 s', () => {
     const t0 = performance.now();
     const lines = run(1, 21600, 10, { random_shades: false }, [], 3);
-    expect(JSON.parse(lines.at(-1)!)).toMatchObject({ ticks: 21600, state: 'lost' });
+    expect(JSON.parse(lines.at(-1)!)).toMatchObject({ ticks: 18000, state: 'lost' });
     expect(performance.now() - t0).toBeLessThan(30000);
   });
 });
@@ -112,7 +117,7 @@ describe('motes & lanterns', () => {
     expect(r.snaps[1].motes).toHaveLength(21);
     expect(ids(r.snaps[2]).size).toBe(22);
   });
-  it('deposits min(carried, missing) on interact press, +10 per mote, lights at 10', () => {
+  it('deposits min(carried, missing) on interact press, +5 per mote, lights at 10', () => {
     const r = go({ player: { pos: [0, 0, 23], carried: 10 } }, [{ tick: 0, interact: true }, { tick: 5, interact: true }]);
     expect(names(r.events)).toEqual(['deposit', 'lantern_lit']);
     expect(r.events[0]).toMatchObject({ tick: 1, data: { lantern_id: 'L1', amount: 10, deposited: 10 } });
@@ -120,24 +125,26 @@ describe('motes & lanterns', () => {
   });
   it('lantern remembers partial deposits; out of interact_radius does nothing', () => {
     const r = go({ player: { pos: [0, 0, 23], carried: 3 }, lanterns: [{ id: 'L1', deposited: 8 }] }, [{ tick: 0, interact: true }]);
-    expect(r.events.map((e) => e.data)).toEqual([{ lantern_id: 'L1', amount: 2, deposited: 10 }, { lantern_id: 'L1' }]);
+    // Phase 3: lantern_lit carries relight (v1.2).
+    expect(r.events.map((e) => e.data)).toEqual([{ lantern_id: 'L1', amount: 2, deposited: 10 }, { lantern_id: 'L1', relight: false }]);
     expect(go({ player: { pos: [0, 0, 22.9], carried: 2 } }, [{ tick: 0, interact: true }]).events).toHaveLength(0);
   });
   it('equal distance: smaller id wins', () => {
     const r = go({ player: { carried: 1 }, lanterns: [{ id: 'L3', pos: [1, 0, 0] }, { id: 'L2', pos: [-1, 0, 0] }] }, [{ tick: 0, interact: true }]);
     expect(r.events[0].data.lantern_id).toBe('L2');
   });
-  it('wins when all lanterns are lit; setup gives no points; bonus = 2 x floor(s left) + 50 x flames', () => {
+  // Phase 3 REPLACED "wins when all lanterns are lit … bonus = 2 x floor(s left)": Ticket-03 §3 removes the early win
+  // (all_lit) and §5 removes the time bonus. Replaced by "no early win" below and the dawn tests in 'fuel & dawn (Phase 3)'.
+  it('lighting every lantern does not end the night; setup gives no points', () => {
     const lanterns = ['L1', 'L2', 'L3', 'L4'].map((id) => ({ id, lit: true }));
-    const r = go({ lanterns: [...lanterns, { id: 'L5', pos: [0, 0, 2] }], player: { carried: 10 } }, [{ tick: 0, interact: true }]);
-    expect(names(r.events)).toEqual(['deposit', 'lantern_lit', 'game_over']);
-    expect(r.events[2].data).toEqual({ result: 'won', reason: 'all_lit' });
-    expect(r.end).toEqual({ type: 'end', ticks: 1, state: 'won', score: 100 + 100 + 2 * 299 + 50 * 3 });
+    const r = go({ lanterns: [...lanterns, { id: 'L5', pos: [0, 0, 2] }], player: { carried: 10 } }, [{ tick: 0, interact: true }], 120);
+    expect(names(r.events)).toEqual(['deposit', 'lantern_lit']);
+    expect(r.end).toEqual({ type: 'end', ticks: 120, state: 'playing', score: 10 * 5 + 100 });
   });
-  it('win on the exact dawn tick still wins', () => {
-    const lanterns = ['L1', 'L2', 'L3', 'L4'].map((id) => ({ id, lit: true }));
+  it('lighting on the exact dawn tick counts for the dawn check', () => {
+    const lanterns = ['L1', 'L2'].map((id) => ({ id, lit: true }));
     const r = go({ time_left_s: 1, lanterns: [...lanterns, { id: 'L5', pos: [0, 0, 2] }], player: { carried: 10 } }, [{ tick: 59, interact: true }], 120);
-    expect(r.events.at(-1)).toMatchObject({ tick: 60, data: { result: 'won' } });
+    expect(r.events.at(-1)).toMatchObject({ tick: 60, data: { result: 'won', reason: 'dawn_survived' } });
   });
 });
 
@@ -261,10 +268,10 @@ describe('night 2 & 3 maps', () => {
     expect(tower[2]).toBeGreaterThanOrEqual(2);
   });
   it('night start positions, lantern counts, durations', () => {
-    expect(go({}, [], 0, 1, 2).snaps[0]).toMatchObject({ night: 2, time_left_s: 330 });
+    expect(go({}, [], 0, 1, 2).snaps[0]).toMatchObject({ night: 2, time_left_s: 270 }) // Phase 3: 270 s (was 330);
     expect(go({}, [], 0, 1, 2).snaps[0].lanterns).toHaveLength(6);
     const s3 = go({}, [], 0, 1, 3).snaps[0];
-    expect(s3).toMatchObject({ night: 3, time_left_s: 360, player: { pos: [0, 0, -25] } });
+    expect(s3).toMatchObject({ night: 3, time_left_s: 300, player: { pos: [0, 0, -25] } });
     expect(s3.lanterns).toHaveLength(7);
     expect(s3.charms.map((c: { id: string }) => c.id)).toEqual(['C1', 'C2']);
   });
@@ -348,7 +355,7 @@ describe('pause', () => {
     expect(r.snaps[15].player.pos).toEqual(r.snaps[10].player.pos);
     expect(r.snaps[15].player.pulse_cd_s).toBe(r.snaps[10].player.pulse_cd_s);
     expect(r.snaps[21]).toMatchObject({ state: 'playing', sim_tick: 11 });
-    expect(r.snaps[30].time_left_s).toBe(r3(300 - 20 / 60));
+    expect(r.snaps[30].time_left_s).toBe(r3(240 - 20 / 60));
   });
 });
 const r3 = (x: number) => Math.round(x * 1000) / 1000;

@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","10","--snapshot-every","5","--scenario","tests/scenarios/refuel.scenario.json","--inputs","tests/scenarios/refuel.inputs.json"],"expect":{"events":{"refuel":1},"end":{"score":25},"last":{"player":{"carried":5}}}}

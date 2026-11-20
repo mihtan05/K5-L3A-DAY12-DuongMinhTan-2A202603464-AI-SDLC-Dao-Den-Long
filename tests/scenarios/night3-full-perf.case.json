@@ -1,1 +1,1 @@
-{"args":["--seed","1","--night","3","--ticks","21600","--snapshot-every","600","--scenario","tests/scenarios/night3-full-perf.scenario.json"],"expect":{"end":{"ticks":21600,"state":"lost"},"events":{"game_over":1}}}
+{"args":["--seed","1","--night","3","--ticks","21600","--snapshot-every","600","--scenario","tests/scenarios/night3-full-perf.scenario.json"],"expect":{"end":{"ticks":18000,"state":"lost"},"events":{"game_over":1}}}

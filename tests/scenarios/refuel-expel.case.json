@@ -1,0 +1,1 @@
+{"args":["--seed","1","--night","1","--ticks","40","--snapshot-every","5","--scenario","tests/scenarios/refuel-expel.scenario.json","--inputs","tests/scenarios/refuel-expel.inputs.json"],"expect":{"events":{"refuel":1,"player_hit":0},"last":{"shades":[{"id":"D","pos":[0,1,31]}]}}}
