@@ -14,7 +14,8 @@ const go = (sc: Scenario, frames: Frame[] = [], ticks = 60, every = 1, night: 1 
     end: lines[lines.length - 1],
   };
 };
-const named = (ev: { name: string }[], n: string) => ev.filter((e) => e.name === n);
+type Ev = { name: string; tick: number; data: Record<string, unknown> };
+const named = (ev: Ev[], n: string) => ev.filter((e) => e.name === n);
 const xz = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[2] - b[2]);
 const L1 = [0, 0, 25];
 const AT_L1 = { pos: [0, 0, 23] as [number, number, number] };

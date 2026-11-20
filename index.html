@@ -20,6 +20,7 @@
       #score { color: var(--gold); font-weight: 600; }
       #bar { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
       #bar i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ffe58a80; background: #0006; }
+      #bar b { align-self: center; margin-left: 8px; font-size: 16px; }
       #bar i.on { background: radial-gradient(#fff6c2, #ffe58a 60%, #ffb347); box-shadow: 0 0 8px #ffe58a; }
       #cds { position: absolute; bottom: 14px; right: 16px; display: flex; gap: 10px; }
       .cd { position: relative; width: 52px; height: 52px; border-radius: 10px; background: #0e1430c0; border: 2px solid var(--gold); display: grid; place-items: center; font-size: 13px; overflow: hidden; }
@@ -41,6 +42,7 @@
       .panel .dang { font-style: italic; }
       .panel button { display: block; width: 100%; margin: 10px 0 0; padding: 10px; font-size: 18px; border-radius: 10px; border: 2px solid var(--gold); background: #0e1430; color: var(--text); cursor: pointer; }
       .panel button:hover, .panel button:focus-visible { background: #2a2f5c; outline: none; }
+      .panel input[type=checkbox] { width: 22px; height: 22px; justify-self: start; }
       .panel label { display: grid; grid-template-columns: 140px 1fr 48px; align-items: center; gap: 10px; margin: 12px 0; text-align: left; }
       .big { font-size: 34px; color: var(--gold); font-weight: 700; }
     </style>

@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { ambientIntensity, css, P } from '../src/render/palette';
+import { ambientIntensity, css, P, P_CB } from '../src/render/palette';
 
 it('palette matches the Ticket-02 table exactly', () => {
   const want: Record<keyof typeof P, string> = {
@@ -15,4 +15,9 @@ it('ambient intensity = 0.15 + 0.55 x lit/total', () => {
   expect(ambientIntensity(0, 5)).toBeCloseTo(0.15);
   expect(ambientIntensity(5, 5)).toBeCloseTo(0.7);
   expect(ambientIntensity(3, 6)).toBeCloseTo(0.425);
+});
+
+it('colorblind mode: shade rim/eyes #00B3FF, UI warning #FFFFFF (Ticket-03)', () => {
+  expect(css(P_CB.shadeRim)).toBe('#00b3ff');
+  expect(css(P_CB.uiDanger)).toBe('#ffffff');
 });

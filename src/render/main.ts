@@ -1,18 +1,18 @@
 // Playable game: drives the same src/core sim as headless at a fixed 60 ticks/s, then draws it.
 // Flow (Ticket-02): main menu -> night intro -> play -> result -> next night; night 3 won -> Dawn screen.
 import * as THREE from 'three';
-import { createGame, IDLE, step, timeLeft, TPS, type Game, type GameEvent, type Input } from '../core/sim';
+import { capacity, createGame, FUEL_MAX, IDLE, lightCost, step, timeLeft, TPS, winNeed, type Game, type GameEvent, type Input } from '../core/sim';
 import { mapFor } from '../core/maps';
 import { TUNING as T } from '../core/tuning';
 import { playSfx, setVolume, startMusic, stopMusic } from './audio';
-import { ambientIntensity, P } from './palette';
+import { ambientIntensity, P, P_CB } from './palette';
 import { makeBigLantern, makeCharm, makeDrifter, makeLeaves, makeMay, makeMote, makeShade, makeWorld } from './prefabs';
 
 const $ = (id: string) => document.getElementById(id)!;
 
 // ---- Settings (saved between sessions)
-type Settings = { volume: number; sens: number };
-const settings: Settings = { volume: 0.7, sens: 1 };
+type Settings = { volume: number; sens: number; colorblind: boolean };
+const settings: Settings = { volume: 0.7, sens: 1, colorblind: false };
 try {
   Object.assign(settings, JSON.parse(localStorage.getItem('ddl.settings') ?? '{}'));
 } catch {}
@@ -143,7 +143,7 @@ function result(won: boolean, reason: string) {
   mode = 'result';
   stopMusic();
   if (won) total += game.score;
-  const msg = won ? '🏮 Đảo đã sáng trở lại!' : reason === 'dawn' ? 'Trời đã sáng… đèn chưa thắp đủ' : 'Mây đã hết lửa…';
+  const msg = won ? '🌅 Đảo còn sáng tới bình minh!' : reason === 'dawn' ? `Trời đã sáng… cần ít nhất ${winNeed(game)} đèn còn sáng` : 'Mây đã hết lửa…';
   const btn = won
     ? night === 3 ? '<button data-act="dawn">Đón bình minh</button>' : '<button data-act="next">Đêm kế tiếp</button>'
     : '<button data-act="retry">Chơi lại Đêm</button><button data-act="menu">Về menu</button>';
@@ -166,10 +166,13 @@ function openSettings() {
   settingsReturn = overlayKind;
   show('settings', `<h2>Cài đặt</h2>
     <label>Âm lượng <input id="vol" type="range" min="0" max="1" step="0.05" value="${settings.volume}"><output id="volv">${Math.round(settings.volume * 100)}</output></label>
+    <label>Bảng màu dễ phân biệt <input id="cb" type="checkbox" ${settings.colorblind ? 'checked' : ''}><span></span></label>
     <label>Độ nhạy chuột <input id="sens" type="range" min="0.2" max="3" step="0.1" value="${settings.sens}"><output id="sensv">${settings.sens.toFixed(1)}</output></label>
     <button data-act="back">Xong</button>`);
   const vol = $('vol') as HTMLInputElement, sens = $('sens') as HTMLInputElement;
   vol.oninput = () => ((settings.volume = +vol.value), ($('volv').textContent = String(Math.round(settings.volume * 100))), saveSettings());
+  const cb = $('cb') as HTMLInputElement;
+  cb.onchange = () => ((settings.colorblind = cb.checked), saveSettings(), applyColorblind());
   sens.oninput = () => ((settings.sens = +sens.value), ($('sensv').textContent = settings.sens.toFixed(1)), saveSettings());
 }
 function closeSettings() {
@@ -240,6 +243,8 @@ function onEvent(e: GameEvent) {
     case 'mote_picked': return playSfx('pickup');
     case 'deposit': return playSfx('deposit');
     case 'lantern_lit': return playSfx('lit');
+    case 'refuel': return playSfx('deposit');
+    case 'lantern_out': return playSfx('lose');
     case 'pulse': ringT = 0; return playSfx('pulse');
     case 'player_hit': return playSfx('hit');
     case 'shade_spawned': return playSfx('shade');
@@ -276,7 +281,7 @@ function draw(dt: number, t: number) {
 
   let lit = 0;
   for (const l of g.lanterns) {
-    lanterns.get(l.id)!.setLevel(l.deposited / T.lantern_cost, l.lit);
+    lanterns.get(l.id)!.setLevel(l.deposited / lightCost(l), l.lit, l.fuel / TPS, Math.floor(t * 2) % 2 === 0, camera); // 1 Hz blink when < 30
     lit += +l.lit;
   }
   ambient.intensity = ambientIntensity(lit, g.lanterns.length);
@@ -286,7 +291,7 @@ function draw(dt: number, t: number) {
     const o = getShade(s.id);
     o.object.position.set(...s.pos);
     o.object.lookAt(p.pos[0], s.pos[1], p.pos[2]);
-    o.update(t, s.state);
+    o.update(t, s.state, settings.colorblind ? P_CB.shadeRim : P.shadeRim);
   }
   const live = g.drifters.filter((d) => d.state !== 'removed');
   const getDrifter = sync(drifters, live.map((d) => d.id), makeDrifter);
@@ -330,11 +335,14 @@ function draw(dt: number, t: number) {
   const clock = $('clock');
   clock.textContent = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
   clock.classList.toggle('danger', tl <= 30);
-  $('lanterns').textContent = `🏮 Đèn ${lit}/${g.lanterns.length}`;
+  if (tl <= 30 && settings.colorblind) clock.textContent = `⚠ ${clock.textContent}`;
+  $('lanterns').textContent = `🏮 Đèn sáng ${lit}/${g.lanterns.length} · cần ${winNeed(g)}`;
   $('score').textContent = `⭐ ${g.score}`;
   const bar = $('bar');
-  if (bar.childElementCount !== T.carry_capacity) bar.innerHTML = '<i></i>'.repeat(T.carry_capacity);
+  const cap = capacity(p);
+  if (bar.childElementCount !== cap + 1) bar.innerHTML = '<i></i>'.repeat(cap) + '<b></b>';
   [...bar.children].forEach((c, i) => c.classList.toggle('on', i < p.carried));
+  bar.lastElementChild!.textContent = `${p.carried}/${cap}`;
   const cd = (id: string, left: number, full: number) => {
     ($(id).firstElementChild as HTMLElement).style.height = `${(100 * left) / full}%`;
   };
@@ -343,8 +351,10 @@ function draw(dt: number, t: number) {
   cd('cd-pulse', p.pulseCd, T.pulse_cooldown_s * TPS);
   const unlit = g.lanterns.filter((l) => !l.lit);
   const dist = (l: { pos: number[] }) => Math.hypot(l.pos[0] - p.pos[0], l.pos[2] - p.pos[2]);
-  const near = unlit.find((l) => dist(l) <= T.interact_radius);
-  $('prompt').textContent = near ? `E — Nạp ánh sáng (${near.deposited}/${T.lantern_cost})` : '';
+  const near = g.lanterns.filter((l) => dist(l) <= T.interact_radius && (!l.lit || l.fuel < FUEL_MAX)).sort((a, b) => dist(a) - dist(b))[0];
+  $('prompt').textContent = !near ? '' : near.lit
+    ? `E — Châm dầu (${Math.floor(near.fuel / TPS)}/100)`
+    : `E — Nạp ánh sáng (${near.deposited}/${lightCost(near)})`;
   $('wind').textContent = g.wind.active ? '🍃 Gió đang thổi!' : g.wind.warn ? '🍃 Gió sắp nổi…' : '';
   const target = unlit.sort((a, b) => dist(a) - dist(b))[0];
   const arrow = $('arrow');
@@ -363,6 +373,11 @@ function draw(dt: number, t: number) {
     }
   }
 }
+
+function applyColorblind() {
+  document.documentElement.style.setProperty('--danger', `#${(settings.colorblind ? P_CB.uiDanger : P.uiDanger).toString(16).padStart(6, '0')}`);
+}
+applyColorblind();
 
 // ---- Loop
 mainMenu();

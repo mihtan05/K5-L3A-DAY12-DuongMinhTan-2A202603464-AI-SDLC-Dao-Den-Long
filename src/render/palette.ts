@@ -22,6 +22,9 @@ export const P = {
   uiText: 0xf5f1e6,
 } as const;
 
+/** Ticket-03 colorblind-friendly mode ("Bảng màu dễ phân biệt"): replaces these two entries. */
+export const P_CB = { shadeRim: 0x00b3ff, uiDanger: 0xffffff } as const;
+
 export const css = (c: number) => `#${c.toString(16).padStart(6, '0')}`;
 
 /** Ambient light grows with progress: 0.15 + 0.55 × lit / total. */

@@ -23,14 +23,16 @@ const click = async (label) => { await page.getByRole('button', { name: label })
 const shot = (name) => page.screenshot({ path: `${dir}/${name}.png` });
 const hold = async (key, ms) => { await page.keyboard.down(key); await page.waitForTimeout(ms); await page.keyboard.up(key); };
 // Scenario-style setup in the page (like headless scenarios), then real key presses do the action.
+// Ticket-03: a night is won only at dawn, so: other lanterns lit, 2 s before dawn, May lights L1 with a real E press.
 const setupWin = () => ev(() => {
   const g = window.__game();
-  g.lanterns.slice(1).forEach((l) => (l.lit = true));
+  g.lanterns.slice(1).forEach((l) => Object.assign(l, { lit: true, fuel: 6000, everLit: true }));
   g.shades.length = 0;
   g.drifters.length = 0;
   const l = g.lanterns[0];
   g.player.pos = [l.pos[0], l.pos[1], l.pos[2] - 1.5];
   g.player.carried = 10;
+  g.startTimeLeft = g.simTick / 60 + 2;
 });
 
 try {
@@ -44,12 +46,17 @@ try {
   await click('Cài đặt');
   await page.locator('#vol').fill('0.3');
   await page.locator('#sens').fill('1.8');
+  await page.locator('#cb').check();
   await shot('02-settings');
   await click('Xong');
   await page.reload();
   await page.waitForSelector('text=Bắt đầu');
   const saved = await ev(() => window.__ui().settings);
-  check('settings saved between sessions', saved.volume === 0.3 && saved.sens === 1.8, saved);
+  check('settings (volume, mouse, colorblind palette) saved between sessions', saved.volume === 0.3 && saved.sens === 1.8 && saved.colorblind === true, saved);
+  // Colorblind palette off for the default-colour checks below; it is checked again near the end.
+  await click('Cài đặt');
+  await page.locator('#cb').uncheck();
+  await click('Xong');
 
   // Menu -> intro -> play
   await click('Bắt đầu');
@@ -85,12 +92,30 @@ try {
     cells: document.querySelectorAll('#bar i').length,
     cds: document.querySelectorAll('#cds .cd').length,
   }));
-  check('HUD: flames, mm:ss clock, k/n lanterns, score, 10 cells, 2 cooldowns', hud.flames === 3 && /^\d\d:\d\d$/.test(hud.clock) && /0\/5/.test(hud.lanterns) && hud.cells === 10 && hud.cds === 2, hud);
+  hud.barText = await page.textContent('#bar');
+  check('HUD: flames, mm:ss clock, k/n lanterns + need, score, carried/capacity, 2 cooldowns', hud.flames === 3 && /^\d\d:\d\d$/.test(hud.clock) && /0\/5 · cần 3/.test(hud.lanterns) && hud.cells === 10 && /0\/10/.test(hud.barText) && hud.cds === 2, hud);
   await ev(() => { const g = window.__game(); g.player.pos = [0, 0, 23.5]; g.player.carried = 4; g.shades.length = 0; });
   await page.waitForTimeout(150);
   const prompt = await page.textContent('#prompt');
   check('prompt "E — Nạp ánh sáng (x/10)" near a lantern', /E — Nạp ánh sáng \(0\/10\)/.test(prompt), prompt);
   await shot('05-hud-prompt');
+  // Fuel UI (Ticket-03): light L1 with a real E press -> capacity 12, refuel prompt; low fuel blinks; out = torn
+  await ev(() => { window.__game().player.carried = 10; });
+  await page.keyboard.press('KeyE');
+  await page.waitForTimeout(200);
+  const lit1 = await ev(() => ({ lit: window.__game().lanterns[0].lit, bar: document.querySelector('#bar').textContent, prompt: document.querySelector('#prompt').textContent }));
+  check('lighting raises capacity to 12; refuel prompt on a lit lantern', lit1.lit && /0\/12/.test(lit1.bar) && /E — Châm dầu \(99\/100\)/.test(lit1.prompt), lit1);
+  await shot('05b-lit-fuel-bar');
+  await ev(() => { window.__game().lanterns[0].fuel = 25 * 60; });
+  await page.waitForTimeout(250);
+  await shot('05c-low-fuel-blink-a');
+  await page.waitForTimeout(500);
+  await shot('05d-low-fuel-blink-b');
+  await ev(() => { window.__game().lanterns[0].fuel = 6; });
+  await page.waitForTimeout(300);
+  const out = await ev(() => window.__game().lanterns[0]);
+  check('lantern runs out of fuel -> off, deposited 0, ever_lit', !out.lit && out.everLit && out.deposited === 0, out);
+  await shot('05e-lantern-out-torn');
   await ev(() => { const g = window.__game(); g.player.pos = [0, 0, 0]; });
   await page.waitForTimeout(150);
   const arrow = await ev(() => !document.querySelector('#arrow').hidden);
@@ -132,13 +157,37 @@ try {
   check('retry returns to the same night intro', (await ev(() => window.__ui())).night === 1);
   await click('Vào đêm');
 
-  // Win all 3 nights -> Dawn with total
+  // Colorblind palette: UI warning white with ⚠ (shade rim/eyes in the screenshot)
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
+  await click('Cài đặt');
+  await page.locator('#cb').check();
+  await click('Xong');
+  await click('Tiếp tục');
+  await ev(() => {
+    const g = window.__game();
+    g.startTimeLeft = g.simTick / 60 + 25;
+    g.player.invuln = 100000;
+    g.shades.push({ id: 'X', pos: [g.player.pos[0] + 1.5, 1, g.player.pos[2] + 3], state: 'stunned', ticks: 100000, push: 0, pushDir: [1, 0], expel: 0, expelFrom: [0, 0], target: null, lantern: null, drainT: 0 });
+    g.shades.push({ id: 'Y', pos: [g.player.pos[0] - 1.5, 1, g.player.pos[2] + 3], state: 'spawning', ticks: 100000, push: 0, pushDir: [1, 0], expel: 0, expelFrom: [0, 0], target: null, lantern: null, drainT: 0 });
+  });
+  await page.waitForTimeout(400);
+  const cbClock = await ev(() => ({ text: document.querySelector('#clock').textContent, color: getComputedStyle(document.querySelector('#clock')).color }));
+  check('colorblind: UI warning is white with ⚠', cbClock.color === 'rgb(255, 255, 255)' && cbClock.text.startsWith('⚠'), cbClock);
+  await shot('13-colorblind');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
+  await click('Chơi lại Đêm');
+  await page.waitForTimeout(200);
+
+  // Win all 3 nights at dawn -> Dawn screen with total
   const scores = [];
   for (const n of [1, 2, 3]) {
     await page.waitForFunction(() => window.__game().tick > 10);
     await setupWin();
     await page.keyboard.press('KeyE');
-    await page.waitForFunction(() => window.__ui().mode === 'result', null, { timeout: 5000 });
+    await page.waitForFunction(() => window.__ui().mode === 'result', null, { timeout: 8000 });
+    check(`night ${n} won at dawn`, /bình minh/.test(await page.textContent('#panel')));
     scores.push(await ev(() => window.__game().score));
     await shot(`09-win-night${n}`);
     if (n < 3) {

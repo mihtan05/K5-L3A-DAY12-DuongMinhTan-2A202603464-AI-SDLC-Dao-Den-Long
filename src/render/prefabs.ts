@@ -52,14 +52,18 @@ export function makeShade() {
   const rim = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: P.shadeRim, side: THREE.BackSide, transparent: true, opacity: 0.8 }));
   rim.scale.setScalar(1.08);
   const eyeGeo = new THREE.SphereGeometry(0.06, 8, 8);
-  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xd8c8ff });
+  const eyeMat = new THREE.MeshBasicMaterial({ color: P.shadeRim });
   for (const x of [-0.13, 0.13]) {
     const eye = new THREE.Mesh(eyeGeo, eyeMat);
     eye.position.set(x, 0.08, 0.4);
     g.add(eye);
   }
   g.add(blob, rim);
-  const update = (t: number, state: string) => {
+  /** rimColor: P.shadeRim, or P_CB.shadeRim in colorblind mode (rim and eyes). */
+  const update = (t: number, state: string, rimColor: number) => {
+    (rim.material as THREE.MeshBasicMaterial).color.set(rimColor);
+    eyeMat.color.set(rimColor);
+    m.emissive.set(rimColor);
     const p = geo.attributes.position.array as Float32Array;
     for (let i = 0; i < p.length; i += 3) {
       const w = 1 + 0.08 * Math.sin(t * 3 + base[i] * 6 + base[i + 1] * 4);
@@ -91,13 +95,44 @@ export function makeBigLantern() {
   roof.position.y = 2.47;
   const light = new THREE.PointLight(P.lanternLit, 0, 12, 1.5);
   light.position.y = 2;
-  g.add(pillar, cage, core, roof, light);
-  const setLevel = (fill: number, lit: boolean) => {
+  // Torn paper (Ticket-03: an out lantern must read as "off" without color): dark jagged slits on the cage.
+  const tear = new THREE.Group();
+  const tearMat = new THREE.MeshBasicMaterial({ color: 0xe8e2d0, side: THREE.DoubleSide }); // pale torn paper edges
+  for (const a of [0.3, 2.4, 4.4]) {
+    const s = new THREE.Shape();
+    s.moveTo(0, 0.22);
+    [[0.05, 0.1], [-0.03, 0.02], [0.06, -0.08], [-0.02, -0.2], [-0.07, -0.05], [0.0, 0.05], [-0.05, 0.15]].forEach(([x, y]) => s.lineTo(x, y));
+    const slit = new THREE.Mesh(new THREE.ShapeGeometry(s), tearMat);
+    slit.position.set(Math.sin(a) * 0.36, 1.95, Math.cos(a) * 0.36);
+    slit.rotation.y = a;
+    tear.add(slit);
+  }
+  // Fuel bar above a lit lantern; faces the camera.
+  const bar = new THREE.Group();
+  const barBg = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.16), new THREE.MeshBasicMaterial({ color: 0x0e1430, transparent: true, opacity: 0.8, depthTest: false }));
+  const fillGeo = new THREE.PlaneGeometry(1.1, 0.1).translate(0.55, 0, 0); // grows from the left edge
+  const barFill = new THREE.Mesh(fillGeo, new THREE.MeshBasicMaterial({ color: P.lanternLit, depthTest: false, transparent: true }));
+  barFill.position.set(-0.55, 0, 0.001);
+  barBg.renderOrder = 10; // background first, fill on top
+  barFill.renderOrder = 11;
+  bar.add(barBg, barFill);
+  bar.position.y = 2.9;
+  g.add(pillar, cage, core, roof, light, tear, bar);
+  /** fuel 0..100 (lit lanterns), blinkOn: false during the dark half of the 1 Hz low-fuel blink. */
+  const setLevel = (fill: number, lit: boolean, fuel: number, blinkOn: boolean, camera: THREE.Camera) => {
+    const low = lit && fuel < 30;
+    const on = lit && (!low || blinkOn);
     cageMat.color.set(lit ? P.lanternLit : P.lanternOff);
-    cageMat.emissiveIntensity = lit ? 1.6 : fill * 0.6;
-    core.visible = lit || fill > 0;
+    cageMat.emissiveIntensity = on ? 1.6 : lit ? 0.3 : fill * 0.6;
+    core.visible = on || (!lit && fill > 0);
     core.scale.setScalar(lit ? 1 : 0.4 + fill * 0.6);
-    light.intensity = lit ? 8 : fill * 1.5;
+    light.intensity = on ? 8 : lit ? 1.5 : fill * 1.5;
+    cage.scale.set(lit ? 1 : 0.8, lit ? 1 : 0.8, lit ? 1 : 0.8); // out: deflated 20%
+    tear.visible = !lit;
+    bar.visible = lit && (!low || blinkOn);
+    barFill.scale.x = Math.max(0.001, fuel / 100);
+    (barFill.material as THREE.MeshBasicMaterial).color.set(low ? 0xff5a5f : P.lanternLit);
+    bar.quaternion.copy(camera.quaternion);
   };
   return { object: g, setLevel };
 }
