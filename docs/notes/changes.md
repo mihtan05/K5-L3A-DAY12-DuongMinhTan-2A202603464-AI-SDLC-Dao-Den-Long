@@ -14,3 +14,7 @@
 | 2 | Tích phân nhảy dùng parabol chính xác mỗi tick thay cho Euler bán ẩn | Euler cho đỉnh 1.167 m thay vì 7²/(2·20) = 1.225 m; bay 0.7 s đúng 42 tick | test "jump" |
 | 2 | `verify.mjs` kiểm tra khối `expect` trong mỗi case | Scenario trước chỉ chứng minh tất định, chưa chứng minh đúng luật | mọi `*.case.json` |
 | 2 | Render: menu, giới thiệu Đêm, kết quả, Bình Minh, tạm dừng, cài đặt (localStorage), HUD đầy đủ, bảng màu chuẩn ở `palette.ts`; bỏ phím R | Ticket-02 Phần 3 | `scripts/smoke.mjs` viết lại |
+| 3 | Đèn có nhiên liệu (đơn vị nguyên 1/60), tắt/thắp lại/châm dầu; thắng ở bình minh với ≥ 60% đèn sáng | Ticket-03 (Change Request) | Xem [CHANGELOG.md](../../CHANGELOG.md) bảng "Test và scenario bị thay"; thiết kế [ADR 0001](../adr/0001-lantern-fuel-and-dawn-win.md) |
+| 3 | Bóng Mực thêm `drain`, đi tới đèn yếu; vùng an toàn chỉ còn ở đèn fuel ≥ 30 | Ticket-03 §2 | Giả định B6, B8 bị thay (mục C) |
+| 3 | Điểm, sức chứa, thời lượng Đêm theo Ticket-03 | Ticket-03 §3–5 | `tests/contract.test.ts`, `tests/fuel.test.ts` |
+| 3 | Render: thanh dầu, nhấp nháy 1 Hz, đèn tắt xẹp + rách, chế độ mù màu, HUD sức chứa/ngưỡng thắng; smoke thắng ở bình minh | Ticket-03 §1, §4, §6 | `scripts/smoke.mjs` |

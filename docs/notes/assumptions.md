@@ -66,3 +66,20 @@ Ticket-02 thay toàn bộ tuning Phase 1 bằng số chuẩn, nên các giả đ
 | B19 | Thứ tự "id tăng dần" | So phần chữ, rồi phần số ở cuối (S2 < S10). |
 | B20 | Tầm nạp đèn, vùng an toàn | Đo theo XZ như contract v1.0. Tỏa Sáng đo 3D như ticket. |
 | B21 | Scenario `charms[]` | `{id, pos?, available?, respawn_ticks?}`; thiếu `pos` thì lấy vị trí bùa cùng id của Đêm, không có thì (0,0,0). `drifters[]`: `{id?, pos, state?, stolen?, state_ticks_left?}`. |
+
+## Phase 3 (Ticket-03, Test Contract v1.2)
+
+Ticket-03 thay một số giả định Phase 2: B6 (Bóng Mực `wander` đi tới điểm ngẫu nhiên, hết choáng về `chase`/`wander`) và B8 (vùng an toàn của mọi đèn sáng). Thiết kế: [ADR 0001](../adr/0001-lantern-fuel-and-dawn-win.md). Thay đổi phá vỡ tương thích: [CHANGELOG.md](../../CHANGELOG.md).
+
+| # | Chỗ mơ hồ | Giả định |
+|---|---|---|
+| C1 | "đi về đèn tắt gần nhất như trước" khi không có đèn yếu | `wander` đi tới đèn tắt gần nhất rồi đứng chờ trong 2 m; nếu mọi đèn đều sáng mạnh thì đi tới điểm ngẫu nhiên như Phase 2. |
+| C2 | Hết choáng | Luôn về `wander` (ticket). Bước 8 cùng tick vẫn chuyển sang `chase` nếu Mây trong 12 m. |
+| C3 | Scenario `lit: true` không ghi `ever_lit` | `ever_lit = true` (đèn đang sáng thì đã từng sáng). Đèn không sáng thì bỏ qua `fuel`, coi như 0. |
+| C4 | Thứ tự trừ dầu ở bước 2 | Mọi đèn sáng hao 1 đơn vị (1/60), rồi từng Bóng Mực `drain` hút 5 đơn vị theo id tăng dần; sau đó đèn ≤ 0 tắt. |
+| C5 | `fuel_drain` | Mỗi Bóng Mực đếm tick đang hút từ lúc vào `drain`; tick thứ 60, 120, … ghi sự kiện với dầu ngay sau lượt hút của nó (không âm). |
+| C6 | Điểm mới không có khóa contract | `score.per_mote` = 5, `per_lantern` = 100, `per_stun` = 5, `per_flame_left` = 50, `per_second_left` = 0 (thưởng thời gian bỏ). +40 thắp lại, +15 trúng lúc `drain`, +50 mỗi đèn ở bình minh nằm ở `RULES` vì contract v1.2 không liệt kê khóa cho chúng. |
+| C7 | Bóng Mực `drain` có gây sát thương không | Không; chỉ `wander`/`chase` gây hit như Phase 2. Khoảng cách 6 m chuyển sang `chase` đo XZ, tính cả đúng 6 m. |
+| C8 | "Đèn đầy dầu (used = 0)" | Theo đúng công thức: vì bước 2 trừ dầu trước bước 5, đèn sáng lúc tương tác luôn < 100 nên nhận ít nhất 1 đom đóm (ceil). Chỉ đèn có `fuel` đúng 100 (không xảy ra trong chơi thường) mới bị bỏ qua. |
+| C9 | Gió Lạc và dầu | Không đổi: Gió Lạc không hút dầu, vùng an toàn vẫn không chặn nó. |
+| C10 | Màu thanh dầu khi yếu | Đỏ #FF5A5F + nhấp nháy 1 Hz (đèn và thanh cùng tắt nửa giây); ở chế độ mù màu, nhấp nháy và đèn tắt bị xẹp + rách vẫn phân biệt không cần màu. |
