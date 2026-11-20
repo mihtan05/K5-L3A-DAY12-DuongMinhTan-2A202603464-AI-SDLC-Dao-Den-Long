@@ -1,0 +1,86 @@
+{
+ "ok": true,
+ "errors": [],
+ "log": [
+  [
+   "loaded",
+   {
+    "tick": 45,
+    "state": "playing",
+    "pos": [
+     0,
+     0,
+     0
+    ],
+    "carried": 0,
+    "motes": 30,
+    "shades": 2
+   }
+  ],
+  [
+   "after W 1.5s",
+   {
+    "tick": 164,
+    "state": "playing",
+    "pos": [
+     0,
+     0,
+     8.9
+    ],
+    "carried": 1,
+    "motes": 30,
+    "shades": 2
+   }
+  ],
+  [
+   "jump",
+   {
+    "tick": 206,
+    "state": "playing",
+    "pos": [
+     0,
+     0.73,
+     8.9
+    ],
+    "carried": 1,
+    "motes": 30,
+    "shades": 2
+   }
+  ],
+  [
+   "hud",
+   "🏮 Đèn: 0/5   ✨ Đom đóm: 1/10\n      🔥 Lửa: ●●●\n    ⭐ Điểm: 10   🌙 4:56   💡 Tỏa sáng (F): cần 2 đom đóm\n    WASD đi · Space nhảy · E nạp đèn · F tỏa sáng · kéo chuột / ←→ xoay camera"
+  ],
+  [
+   "win",
+   {
+    "tick": 214,
+    "state": "won",
+    "pos": [
+     0,
+     0,
+     16
+    ],
+    "carried": 0,
+    "motes": 30,
+    "shades": 0
+   },
+   "🏮 Đảo đã sáng trở lại!\n        Điểm: 556 · Nhấn R để chơi lại"
+  ],
+  [
+   "replay",
+   {
+    "tick": 20,
+    "state": "playing",
+    "pos": [
+     0,
+     0,
+     0
+    ],
+    "carried": 0,
+    "motes": 30,
+    "shades": 2
+   }
+  ]
+ ]
+}
