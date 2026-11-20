@@ -43,10 +43,25 @@ export function makeMay() {
 }
 
 /** Bóng Mực: dark wobbling ink blob with a violet rim and round sad eyes. Center at origin. */
+// One wobbling body shared by every shade: deformed once per frame, not once per shade (200 shades in the Ticket-04 bench).
+const shadeGeo = new THREE.IcosahedronGeometry(0.45, 2);
+const shadeBase = Float32Array.from(shadeGeo.attributes.position.array as Float32Array);
+let shadeT = NaN;
+function wobble(t: number) {
+  if (t === shadeT) return;
+  shadeT = t;
+  const p = shadeGeo.attributes.position.array as Float32Array, base = shadeBase;
+  for (let i = 0; i < p.length; i += 3) {
+    const w = 1 + 0.08 * Math.sin(t * 3 + base[i] * 6 + base[i + 1] * 4);
+    p[i] = base[i] * w;
+    p[i + 1] = base[i + 1] * w * (base[i + 1] > 0 ? 1.15 : 1);
+    p[i + 2] = base[i + 2] * w;
+  }
+  shadeGeo.attributes.position.needsUpdate = true;
+}
 export function makeShade() {
   const g = new THREE.Group();
-  const geo = new THREE.IcosahedronGeometry(0.45, 2);
-  const base = Float32Array.from(geo.attributes.position.array as Float32Array);
+  const geo = shadeGeo;
   const m = mat(P.shadeBody, { emissive: P.shadeRim, emissiveIntensity: 0.12, transparent: true, opacity: 0.95 });
   const blob = new THREE.Mesh(geo, m);
   const rim = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: P.shadeRim, side: THREE.BackSide, transparent: true, opacity: 0.8 }));
@@ -64,14 +79,7 @@ export function makeShade() {
     (rim.material as THREE.MeshBasicMaterial).color.set(rimColor);
     eyeMat.color.set(rimColor);
     m.emissive.set(rimColor);
-    const p = geo.attributes.position.array as Float32Array;
-    for (let i = 0; i < p.length; i += 3) {
-      const w = 1 + 0.08 * Math.sin(t * 3 + base[i] * 6 + base[i + 1] * 4);
-      p[i] = base[i] * w;
-      p[i + 1] = base[i + 1] * w * (base[i + 1] > 0 ? 1.15 : 1);
-      p[i + 2] = base[i + 2] * w;
-    }
-    geo.attributes.position.needsUpdate = true;
+    wobble(t);
     const stunned = state === 'stunned';
     m.color.set(stunned ? P.shadeStunned : P.shadeBody);
     rim.visible = !stunned;

@@ -4,11 +4,16 @@ import * as THREE from 'three';
 import { capacity, createGame, FUEL_MAX, IDLE, lightCost, step, timeLeft, TPS, winNeed, type Game, type GameEvent, type Input } from '../core/sim';
 import { mapFor } from '../core/maps';
 import { TUNING as T } from '../core/tuning';
+import { createBench } from '../core/bench';
 import { playSfx, setVolume, startMusic, stopMusic } from './audio';
+import { BENCH_CAM, frameStats, orbit } from './bench';
 import { ambientIntensity, P, P_CB } from './palette';
 import { makeBigLantern, makeCharm, makeDrifter, makeLeaves, makeMay, makeMote, makeShade, makeWorld } from './prefabs';
 
 const $ = (id: string) => document.getElementById(id)!;
+// Ticket-04 bench scene: ?bench&seed=42&duration=30 (scripts/bench.mjs). No player input; camera on a fixed orbit.
+const query = new URLSearchParams(location.search);
+const BENCH = query.has('bench') ? { seed: Number(query.get('seed') ?? 42), duration: Number(query.get('duration') ?? 30) } : null;
 
 // ---- Settings (saved between sessions)
 type Settings = { volume: number; sens: number; colorblind: boolean };
@@ -61,6 +66,7 @@ renderer.domElement.addEventListener('mousedown', () => (dragging = true));
 addEventListener('mouseup', () => (dragging = false));
 addEventListener('mousemove', (e) => dragging && (yaw -= e.movementX * 0.3 * settings.sens));
 function readInput(): Input {
+  if (BENCH) return IDLE;
   const k = (c: string) => (keys.has(c) ? 1 : 0);
   if (keys.has('ArrowLeft')) yaw += 2 * settings.sens;
   if (keys.has('ArrowRight')) yaw -= 2 * settings.sens;
@@ -211,9 +217,9 @@ function clearWorld() {
     m.clear();
   }
 }
-function startNight() {
+function startNight(g?: Game) {
   clearWorld();
-  game = createGame(Math.floor(Math.random() * 2 ** 31), {}, night); // render only: seed varies per play
+  game = g ?? createGame(Math.floor(Math.random() * 2 ** 31), {}, night); // render only: seed varies per play
   world = makeWorld(game.map);
   scene.add(world);
   for (const l of game.lanterns) {
@@ -233,7 +239,7 @@ function startNight() {
   mode = 'play';
   hide();
   $('hud').hidden = false;
-  startMusic();
+  if (!BENCH) startMusic();
 }
 
 let lastSecond = Infinity;
@@ -324,8 +330,13 @@ function draw(dt: number, t: number) {
 
   const th = (yaw * Math.PI) / 180;
   const fy = Math.max(p.pos[1], -6);
-  camera.position.set(p.pos[0] - Math.sin(th) * 7, fy + 4, p.pos[2] - Math.cos(th) * 7);
-  camera.lookAt(p.pos[0], fy + 1.2, p.pos[2]);
+  if (bench) {
+    camera.position.set(...orbit(bench.t));
+    camera.lookAt(0, 0, 0);
+  } else {
+    camera.position.set(p.pos[0] - Math.sin(th) * 7, fy + 4, p.pos[2] - Math.cos(th) * 7);
+    camera.lookAt(p.pos[0], fy + 1.2, p.pos[2]);
+  }
   camera.updateMatrixWorld();
 
   // HUD
@@ -380,10 +391,16 @@ function applyColorblind() {
 applyColorblind();
 
 // ---- Loop
-mainMenu();
+let bench: { start: number; last: number; t: number; dts: number[]; heap: number; firstFrameEpoch: number } | null = null;
+if (BENCH) {
+  night = 1;
+  startNight(createBench(BENCH.seed));
+  bench = { start: -1, last: 0, t: 0, dts: [], heap: 0, firstFrameEpoch: 0 };
+} else mainMenu();
 const clock = new THREE.Clock();
 let acc = 0;
-renderer.setAnimationLoop(() => {
+renderer.setAnimationLoop((now: number) => {
+  if (bench) benchFrame(now);
   const dt = Math.min(clock.getDelta(), 0.25);
   if (mode === 'play') {
     acc += dt;
@@ -405,5 +422,18 @@ renderer.setAnimationLoop(() => {
   if (game) draw(dt, clock.elapsedTime);
   renderer.render(scene, camera);
 });
+/** Frame times over [warmup, warmup + duration) from the first bench frame; then publish the result once. */
+function benchFrame(now: number) {
+  const b = bench!;
+  if (b.start < 0) [b.start, b.last, b.firstFrameEpoch] = [now, now, performance.timeOrigin + now];
+  b.t = (now - b.start) / 1000;
+  const heap = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize ?? 0;
+  b.heap = Math.max(b.heap, heap);
+  const end = BENCH_CAM.warmup_s + BENCH!.duration;
+  if (b.t > BENCH_CAM.warmup_s && b.t <= end) b.dts.push(now - b.last);
+  b.last = now;
+  if (b.t > end && !(window as unknown as { __bench?: unknown }).__bench)
+    Object.assign(window, { __bench: { ...frameStats(b.dts), first_frame_epoch_ms: b.firstFrameEpoch, js_heap_peak_mb: heap ? Math.round(b.heap / 2 ** 20) : null } });
+}
 // For Playwright evidence checks
 Object.assign(window, { __game: () => game, __ui: () => ({ mode, night, total, overlay: overlayKind, settings: { ...settings } }) });
