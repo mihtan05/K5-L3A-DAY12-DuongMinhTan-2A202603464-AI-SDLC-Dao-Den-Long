@@ -1,5 +1,41 @@
 # Changelog
 
+## [Phase 4] — Ticket-04 "Bình minh: phát hành v1.0.0", Test Contract v1.3 · Release v1.0.0
+
+Ticket: [docs/lab/TICKET-04.md](docs/lab/TICKET-04.md) · Bằng chứng: [docs/proof/phase-4](docs/proof/phase-4/README.md)
+
+### Thêm
+- **Bench** (`npm run bench -- --seed 42 --duration 30 --out bench.json`): cảnh chuẩn có Đêm 1, 200 Bóng Mực `wander`, 100 đom đóm và đèn L1–L3 sáng. Camera bay vòng; cửa sổ 1280×720; tắt vsync; khởi động 3 s rồi đo. Kết quả ghi các trường `avg_fps`, `p1_low_fps`, `frame_ms_p95`, `frames`, `load_ms`.
+- **Soak** (`npm run soak -- --seed 7 --nights 10 --out soak.json`): 10 Đêm xoay vòng trong một tiến trình, input ngẫu nhiên theo seed. Kết quả ghi `crashes` và RSS đầu/cuối.
+- **Bảng xếp hạng cục bộ:**
+  - Nhập tên sau màn Bình Minh hoặc sau khi thua. Tên 3–12 ký tự, nhận cả tiếng Việt có dấu.
+  - Giữ top 10; bằng điểm thì ai đạt trước đứng trên.
+  - Lưu ở `data/leaderboard.json` qua server game. Có màn hình riêng từ menu chính.
+  - Xuất ra file bằng `npm start -- --export-leaderboard out.json`.
+- **Dễ tiếp cận:**
+  - Đổi phím cho 9 hành động, có báo trùng phím và nút "Khôi phục mặc định".
+  - Phụ đề cho: Bóng Mực xuất hiện (kèm mũi tên ở mép màn hình), gió sắp thổi, 10 giây cuối, đèn dưới 30 dầu.
+  - Giảm chuyển động: tắt rung camera và chớp màn hình. Cả hai hiệu ứng này đều mới thêm, xảy ra khi bị đánh và khi tỏa sáng.
+  - Mọi chữ ≥ 18 px; tùy chọn chữ lớn ×1.25.
+- **Chạy game:** `npm start` build rồi chạy server tĩnh kèm API bảng xếp hạng (`scripts/server.mjs`). Release v1.0.0 là bản web tĩnh kèm server này.
+
+### ⚠ Breaking changes
+| # | Thay đổi | Trước (v1.2) | Sau (v1.3) |
+|---|---|---|---|
+| BC13 | `contract_version` | `"1.2"` | `"1.3"`, thêm `bench_cmd` và `soak_cmd` |
+| BC14 | `run_cmd` | `npm run dev` | `npm start --` (build + server; nhận `--export-leaderboard`) |
+| BC15 | Phím | Cố định; Esc **hoặc P** tạm dừng; lướt bằng Shift trái **hoặc phải** | Mỗi hành động có một phím, đổi được; mặc định Esc tạm dừng, Shift trái lướt |
+| BC16 | Seed khi chơi trên trình duyệt | Ngẫu nhiên mỗi Đêm | Mỗi lượt chơi có một `seed` (lưu vào bảng xếp hạng); Đêm n dùng `seed + n − 1` |
+
+Đầu ra headless không đổi. Cờ `bench` trong `Game` mặc định là `false`; 35 scenario cũ vẫn PASS và cho kết quả giống hệt.
+
+### Test
+- Thêm `tests/release.test.ts`: cảnh bench, input soak, tính tất định, camera và công thức tính FPS.
+- Thêm `tests/leaderboard.test.ts`: kiểm tra tên, thứ tự xếp, top 10, múi giờ, dữ liệu hỏng.
+- `tests/contract.test.ts` đổi `1.2` → `1.3` (lý do: BC13).
+- Smoke có thêm 16 kiểm tra cho Phase 4.
+- Không có test nào bị `skip`.
+
 ## [Phase 3] — Ticket-03 "Đèn cạn dầu", Test Contract v1.2
 
 Thiết kế: [docs/adr/0001-lantern-fuel-and-dawn-win.md](docs/adr/0001-lantern-fuel-and-dawn-win.md) · Ticket: [docs/lab/TICKET-03.md](docs/lab/TICKET-03.md)
@@ -35,7 +71,14 @@ Thiết kế: [docs/adr/0001-lantern-fuel-and-dawn-win.md](docs/adr/0001-lantern
 Không có test nào bị `skip`. Test mới: `tests/fuel.test.ts` (23 test) và 11 scenario (`fuel-out`, `refuel`, `relight`, `capacity`, `drain`, `drain-pulse`, `refuel-expel`, `dawn-win`, `dawn-lose`, `dawn-no-flames`, `all-lit-no-early-win`).
 
 ## [Phase 2] — Ticket-02 "Ba hòn đảo", Test Contract v1.1
-Xem [docs/notes/changes.md](docs/notes/changes.md) (các dòng Phase 2) và [docs/spec/phase-2.md](docs/spec/phase-2.md).
+- 3 Đêm (Đảo Bến, Đảo Cau, Đảo Chuông). Thêm lướt, rơi khỏi đảo, bục nhảy, gió, Gió Lạc, Bùa Gió và tạm dừng.
+- Menu, giới thiệu từng Đêm, màn Bình Minh.
+- ⚠ Toàn bộ tuning của Phase 1 được thay bằng số chuẩn của Ticket-02, contract v1.1 (thêm 5 khóa).
+- ⚠ `step()` theo thứ tự tick bắt buộc.
+- ⚠ Bóng Mực có các trạng thái `spawning/wander/chase/recoil/stunned` và sinh theo lịch. Điểm cộng lúc **nạp** vào đèn chứ không phải lúc nhặt.
+- Chi tiết: [docs/notes/changes.md](docs/notes/changes.md) (các dòng Phase 2) và [docs/spec/phase-2.md](docs/spec/phase-2.md).
 
 ## [Phase 1] — PRD-0, Test Contract v1.0
-Bản đầu tiên.
+- Bản đầu tiên: một đảo, nhặt đom đóm, thắp đèn, Bóng Mực, Tỏa sáng, thắng/thua.
+- Có chế độ headless JSONL tất định theo seed, `game.contract.json` v1.0, unit test và scenario.
+- Bằng chứng: [docs/proof/phase-1](docs/proof/phase-1/README.md).

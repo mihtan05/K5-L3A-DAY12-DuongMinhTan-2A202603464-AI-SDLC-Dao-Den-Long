@@ -18,13 +18,26 @@ if (!Number.isInteger(seed) || !(duration > 0)) {
 }
 
 const server = await startServer(0);
-const channel = process.env.BROWSER_CHANNEL ?? (process.platform === 'win32' ? 'msedge' : undefined);
 const vsyncFlags = ['--disable-gpu-vsync', '--disable-frame-rate-limit'];
-const browser = await chromium.launch({
-  channel,
+const launchOpts = {
   headless: process.env.BENCH_HEADLESS === '1',
   args: [...vsyncFlags, '--enable-gpu', '--ignore-gpu-blocklist', '--window-size=1280,800', '--window-position=40,40'],
-});
+};
+// Installed Edge (Windows) / Chrome (macOS, Linux) first, then Playwright's own Chromium.
+const tries = process.env.BROWSER_CHANNEL ? [process.env.BROWSER_CHANNEL] : [process.platform === 'win32' ? 'msedge' : 'chrome', undefined];
+let browser, channel;
+for (channel of tries) {
+  try {
+    browser = await chromium.launch({ ...launchOpts, channel });
+    break;
+  } catch (e) {
+    if (channel === tries.at(-1)) {
+      console.error(`no browser to run the bench: install Edge/Chrome or run \`npx playwright install chromium\`\n${e.message}`);
+      server.close();
+      process.exit(4);
+    }
+  }
+}
 let code = 0;
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });

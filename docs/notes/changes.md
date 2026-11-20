@@ -18,3 +18,8 @@
 | 3 | Bóng Mực thêm `drain`, đi tới đèn yếu; vùng an toàn chỉ còn ở đèn fuel ≥ 30 | Ticket-03 §2 | Giả định B6, B8 bị thay (mục C) |
 | 3 | Điểm, sức chứa, thời lượng Đêm theo Ticket-03 | Ticket-03 §3–5 | `tests/contract.test.ts`, `tests/fuel.test.ts` |
 | 3 | Render: thanh dầu, nhấp nháy 1 Hz, đèn tắt xẹp + rách, chế độ mù màu, HUD sức chứa/ngưỡng thắng; smoke thắng ở bình minh | Ticket-03 §1, §4, §6 | `scripts/smoke.mjs` |
+| 4 | Contract v1.3: thêm `bench_cmd`, `soak_cmd`; `run_cmd` đổi thành `npm start --` (build + server có API bảng xếp hạng) | Ticket-04 §1, §2, §3, §6 | `tests/contract.test.ts` (1.2 → 1.3) |
+| 4 | Cờ `Game.bench` trong core: tắt sát thương, nhặt, hao dầu và kết thúc Đêm. Mặc định `false`, nên đầu ra headless không đổi | Ticket-04 §1 | `tests/release.test.ts`; 35 scenario cũ vẫn PASS |
+| 4 | Phím cố định → đổi được, một phím cho mỗi hành động (bỏ phím phụ P và Shift phải) | Ticket-04 §4 | Smoke: nhảy bằng phím J sau khi đổi |
+| 4 | Thêm rung camera và chớp màn hình (chỉ ở phần hiển thị) để "Giảm chuyển động" có thứ để tắt | Ticket-04 §4 | Smoke kiểm tra có/không |
+| 4 | Mesh Bóng Mực dùng chung, biến dạng một lần mỗi khung | Bench: 84.6 → 147 FPS trung bình, 1% low 30 → 62 (đo 10 s) | — |

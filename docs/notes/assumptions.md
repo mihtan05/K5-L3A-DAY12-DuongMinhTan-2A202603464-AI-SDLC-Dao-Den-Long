@@ -83,3 +83,23 @@ Ticket-03 thay một số giả định trước: A10 (thưởng thời gian khi
 | C8 | "Đèn đầy dầu (used = 0)" | Theo đúng công thức: vì bước 2 trừ dầu trước bước 5, đèn sáng lúc tương tác luôn < 100 nên nhận ít nhất 1 đom đóm (ceil). Chỉ đèn có `fuel` đúng 100 (không xảy ra trong chơi thường) mới bị bỏ qua. |
 | C9 | Gió Lạc và dầu | Không đổi: Gió Lạc không hút dầu, vùng an toàn vẫn không chặn nó. |
 | C10 | Màu thanh dầu khi yếu | Đỏ #FF5A5F + nhấp nháy 1 Hz (đèn và thanh cùng tắt nửa giây); ở chế độ mù màu, nhấp nháy và đèn tắt bị xẹp + rách vẫn phân biệt không cần màu. |
+
+## Phase 4 (Ticket-04, Test Contract v1.3)
+
+| # | Chỗ mơ hồ | Giả định |
+|---|---|---|
+| D1 | "Cửa sổ 1280×720" với bản web | Khung vẽ (viewport của trang) đúng 1280×720. Cửa sổ trình duyệt bên ngoài to hơn một chút vì có viền. Tắt vsync bằng cờ Chromium `--disable-gpu-vsync --disable-frame-rate-limit`. Bằng chứng tắt được: FPS đo vượt tần số quét 120 Hz của màn hình. |
+| D2 | "Rải đều trên đảo (seed 42)" | Lấy điểm ngẫu nhiên đều trong hình vuông [−45, 45]² bằng `makeRng(seed)`, chỉ giữ điểm có `ground()` hữu hạn, tức là phân bố đều theo diện tích đảo. Bóng Mực đặt ở mặt đất + 1 m, đom đóm ở mặt đất. Không có Gió Lạc và tắt gió. |
+| D3 | Cách đo khung hình | `dt` là hiệu timestamp giữa hai lần `requestAnimationFrame` liên tiếp. Chỉ tính khung kết thúc trong khoảng (3 s, 3 s + duration], đếm từ khung đầu tiên của cảnh bench. p95 lấy theo phương pháp nearest-rank: phần tử thứ ⌈0.95·N⌉ sau khi sắp xếp. |
+| D4 | `load_ms` "từ lúc tiến trình bắt đầu" | Tính từ lúc tiến trình `node scripts/bench.mjs` bắt đầu (`performance.timeOrigin`) tới timestamp khung đầu tiên của cảnh bench. Bước `vite build` trong `npm run bench` chạy ở tiến trình trước đó nên không tính vào. |
+| D5 | Soak: "Đêm thứ i dùng seed 7 + i" | i đếm từ 1, nên seed là 8…17. Đêm thứ i là Đêm `((i − 1) mod 3) + 1`. Input dùng một luồng rng riêng (`makeRng((seed + i) ^ 0x5eed)`): hướng đi là vector đơn vị có góc ngẫu nhiên đều; 4 xác suất được tung độc lập mỗi tick. Không bấm tạm dừng. Mỗi Đêm chạy tới khi `game_over` (bình minh hoặc hết lửa). |
+| D6 | `mem_start_mb` / `mem_end_mb` | `mem_start_mb` là RSS ngay sau `createGame` của Đêm 1, trước tick đầu tiên. `mem_end_mb` là RSS sau khi bỏ tham chiếu tới Đêm cuối. Cả hai đều đo sau khi gọi `gc()` (chạy với `--expose-gc`). |
+| D7 | `peak_mem_mb` của bản web | Ghi `null` vì trang web không đọc được RSS của các tiến trình trình duyệt. Có thêm `js_heap_peak_mb` (Chromium `performance.memory`) để tham khảo. |
+| D8 | Tên trên bảng xếp hạng | Chuẩn hóa NFC, cắt khoảng trắng hai đầu. Hợp lệ khi có 3–12 ký tự Unicode thuộc nhóm chữ, dấu, số hoặc `_` (nên nhận cả tiếng Việt có dấu). Không cho khoảng trắng hay ký hiệu. |
+| D9 | "Lưu trên đĩa cục bộ" | Server game (`npm start`, `npm run dev`, bản Release) ghi file `data/leaderboard.json`, đổi tên file tạm để không bao giờ để lại file ghi dở. Nếu game chạy trên một web server tĩnh khác, bảng lưu vào `localStorage` của trình duyệt (vẫn nằm trên đĩa, nhưng chỉ dùng được với trình duyệt đó). |
+| D10 | Điểm lưu sau khi thua | `score` là tổng điểm các Đêm đã thắng trong lượt chơi này (Đêm thua tính 0), `nights_won` là số Đêm đã thắng. `seed` là seed của lượt chơi, Đêm n dùng `seed + n − 1`. `achieved_at` do server ghi theo giờ máy, kèm offset (ví dụ `+07:00`). |
+| D11 | Bằng điểm | Ai có `achieved_at` sớm hơn đứng trên. Cùng thời điểm (cùng giây) thì mục đã có trên bảng đứng trên. |
+| D12 | Đổi phím | Mỗi hành động có đúng một phím. Gán một phím đang dùng cho hành động khác thì bị từ chối và game báo rõ hành động kia. Mặc định: W/S/A/D, Space, Shift trái, E, F, Esc. Phím ← → xoay camera, trừ khi chúng đã được gán cho một hành động. |
+| D13 | Phụ đề / chỉ báo | Bật mặc định và tắt được trong Cài đặt. Mũi tên Bóng Mực chỉ hiện 3.5 s sau khi nó xuất hiện và chỉ khi nó nằm ngoài màn hình. Thêm phụ đề "Đèn Lx đã tắt". |
+| D14 | Giảm chuyển động | Trước Phase 4 game chưa có rung camera hay chớp màn hình. Phase 4 thêm cả hai (khi bị đánh: rung + chớp đỏ; khi tỏa sáng: chớp vàng nhẹ) và tùy chọn tắt chúng. Giá trị mặc định theo `prefers-reduced-motion` của hệ điều hành. |
+| D15 | Cảnh bench và phần sáng tạo | Cảnh bench không có thực thể sáng tạo nào khác ngoài các prefab chuẩn. HUD vẫn hiện như lúc chơi. Nhạc nền tắt vì cảnh không có input. Để chịu được 200 Bóng Mực, mesh "thở" của Bóng Mực được dùng chung và chỉ biến dạng một lần mỗi khung; chỉ phần hiển thị thay đổi. |
